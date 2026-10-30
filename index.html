@@ -157,6 +157,13 @@ tbody tr.click:hover td{background:var(--surface-2)}
 .cardhead .search{flex:1 1 240px;max-width:340px}
 .savebar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(20,28,36,.1);z-index:5}
 .seg a svg{width:13px;height:13px;vertical-align:-2px}
+.tq{border:1px solid var(--line-2);background:var(--surface-2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.tq b{font-weight:600;line-height:1.45}
+.tqcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px 20px;font-size:.84rem}
+.tqcols ul.plain{margin-top:4px}
+.lvl{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:5px;white-space:nowrap;flex:none;margin-top:1px}
+.lvl.basic{background:var(--good-soft);color:var(--good)} .lvl.intermediate{background:var(--info-soft);color:var(--info)}
+.lvl.advanced{background:var(--violet-soft);color:var(--violet)} .lvl.scenario{background:var(--warn-soft);color:var(--warn)}
 .cardfoot{padding:10px 14px;border-top:1px solid var(--line-2);font-size:.74rem;color:var(--muted)}
 .rowgo{color:var(--muted);display:inline-flex}
 tbody tr.click:hover .rowgo{color:var(--accent)}
@@ -290,7 +297,7 @@ const S = {
   open: null, draft: {}, busy: null, ctl: null, confirm: null, editJob: false, newJob: false,
   lastScreen: null, err: null, dashAll: true,
   recruiter: lsGet("recruiter") || "", msgType: "outreach", msgCand: "", msgText: null,
-  q: "", srcFilter: "", sort: "score", layout: "list", stageTab: "all", page: 1
+  q: "", srcFilter: "", sort: "score", layout: "list", stageTab: "all", page: 1, tqSkill: "all", tqLevel: "all"
 };
 
 /* ---------- scoring (transparent, deterministic) ---------- */
@@ -544,6 +551,7 @@ const IC = {
   chevL:'<path d="m15 18-6-6 6-6"/>', chevR:'<path d="m9 18 6-6-6-6"/>',
   copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
   dots:'<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
+  code:'<path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
   layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
 };
 const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ""}</svg>`;
@@ -611,10 +619,10 @@ function vJob() {
   const j = S.newJob ? null : activeJob();
   if (S.newJob || !j) return `<div class="jhead"><div><h1>New job</h1><p class="muted">Stage 1: paste the job description to create a requisition.</p></div></div>` + newJobForm();
   const cs = candsFor(j.id); const matched = cs.filter(c => score(c, j).total >= 70).length; const st = jobStatus(j);
-  const tab = ["candidates","questions","sourcing","edit"].includes(S.view) ? S.view : "details";
+  const tab = ["candidates","questions","technical","sourcing","edit"].includes(S.view) ? S.view : "details";
   const exp = (j.minYears != null || j.maxYears != null) ? `${j.minYears ?? "?"}${j.maxYears != null ? "–" + j.maxYears : "+"} yrs` : NM;
   const notice = j.noticeMaxDays != null ? `≤ ${j.noticePreferredDays ?? j.noticeMaxDays}d (max ${j.noticeMaxDays}d)` : j.noticePreferredDays != null ? `≤ ${j.noticePreferredDays} days` : NM;
-  let body = tab === "candidates" ? tabCandidates(j, cs) : tab === "questions" ? tabQuestions(j) : tab === "sourcing" ? tabSourcing(j) : tab === "edit" ? editJobForm(j) : tabDetails(j);
+  let body = tab === "candidates" ? tabCandidates(j, cs) : tab === "questions" ? tabQuestions(j) : tab === "sourcing" ? tabSourcing(j) : tab === "edit" ? editJobForm(j) : tab === "technical" ? tabTechnical(j) : tabDetails(j);
   return `
   <div class="jhead"><div><h1>${esc(j.title || "Untitled role")}${fictTag(j)}</h1>
     <div class="meta"><span class="status ${st[0]}">${st[1]}</span>${j.code ? `<span>${esc(j.code)}</span><span class="dot"></span>` : ""}${cs.length} applicants<span class="dot"></span>${matched} matched (70+)</div></div>
@@ -632,6 +640,7 @@ function vJob() {
     <a href="#candidates" ${tab === "candidates" ? 'aria-current="page"' : ""}>Candidates (${cs.length})</a>
     <a href="#sourcing" ${tab === "sourcing" ? 'aria-current="page"' : ""}>Sourcing</a>
     <a href="#questions" ${tab === "questions" ? 'aria-current="page"' : ""}>Screening questions</a>
+    <a href="#technical" ${tab === "technical" ? 'aria-current="page"' : ""}>Technical questions${arr(j.techQs).length ? " (" + arr(j.techQs).length + ")" : ""}</a>
     <a href="#edit" ${tab === "edit" ? 'aria-current="page"' : ""}>${ic("edit")} Edit</a></nav>
 </div>
   ${body}`;
@@ -712,6 +721,86 @@ function tabQuestions(j) {
       ${qs.map((q, i) => `<tr><td class="num muted">${i + 1}</td><td>${esc(q.q)}</td><td>${esc(q.indicator)}</td><td>${esc(q.followUp)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty" style="border:0">No questions yet. Create the job from a JD with Claude to generate them.</div>`}
   </section>`;
 }
+/* technical questions */
+const TQ_LEVELS = [["basic","Basic"],["intermediate","Intermediate"],["advanced","Advanced"],["scenario","Scenario"]];
+const tqLevelLabel = k => (TQ_LEVELS.find(l => l[0] === k) || [k, k])[1];
+function tqPrompt(j) {
+  const job = {title: j.title, seniority: j.seniority, minYears: j.minYears, maxYears: j.maxYears, mandatory: arr(j.mandatory), preferred: arr(j.preferred), domain: j.domain, workMode: j.workMode};
+  return `You are a senior technical interviewer helping an IT recruiter at [Organization name] prepare the technical round for a job.
+Never treat two technologies as equivalent just because they share a category. Ask about the exact skills listed.
+Reply with only one JSON object in exactly this shape:
+{"questions":[{"skill":"exact skill name from the lists below, or Scenario","level":"basic|intermediate|advanced|scenario","q":"the question","points":["2-4 short key points a good answer includes"],"redFlags":["1-2 short warning signs in an answer"]}]}
+Rules:
+- For EACH mandatory skill: exactly 3 questions, one basic, one intermediate, one advanced.
+- For EACH preferred skill: exactly 1 intermediate question.
+- Then exactly 4 scenario questions (skill "Scenario", level "scenario") grounded in this role's responsibilities and domain, each combining several skills.
+- Calibrate difficulty to ${j.minYears ?? "?"}–${j.maxYears ?? "?"} years of experience.
+- Practical, answerable verbally in 2–4 minutes; no trivia, no coding exercises that need an editor. Each question under 40 words.
+- Write points and red flags in plain words so a non-technical recruiter can check them.
+
+JOB:
+${JSON.stringify(job)}
+
+JOB DESCRIPTION EXCERPT:
+"""
+${String(j.jdText || "").slice(0, 5000) || "Not available"}
+"""`;
+}
+const cleanTQ = (list, custom) => (Array.isArray(list) ? list : []).filter(t => t && t.q).map(t => ({
+  id: t.id || uid("t"), skill: String(t.skill || "General").trim() || "General",
+  level: TQ_LEVELS.some(l => l[0] === t.level) ? t.level : "intermediate", q: String(t.q).trim(),
+  points: arr(t.points).map(String), redFlags: arr(t.redFlags).map(String), custom: !!(custom || t.custom)}));
+function tqGroups(j, list) {
+  const order = [...arr(j.mandatory), ...arr(j.preferred), "Scenario"];
+  const by = new Map();
+  list.forEach(t => { const k = order.find(o => o.toLowerCase() === t.skill.toLowerCase()) || t.skill; if (!by.has(k)) by.set(k, []); by.get(k).push(t); });
+  const lvl = t => TQ_LEVELS.findIndex(l => l[0] === t.level);
+  return [...by.entries()].sort((a, b) => { const ia = order.indexOf(a[0]), ib = order.indexOf(b[0]); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); })
+    .map(([k, v]) => [k, v.sort((a, b) => lvl(a) - lvl(b))]);
+}
+function tabTechnical(j) {
+  const all = Array.isArray(j.techQs) ? j.techQs : [];
+  const skills = [...new Set([...arr(j.mandatory), ...arr(j.preferred), "Scenario", ...all.map(t => t.skill)])];
+  const list = all.filter(t => (S.tqSkill === "all" || t.skill.toLowerCase() === S.tqSkill.toLowerCase()) && (S.tqLevel === "all" || t.level === S.tqLevel));
+  const counts = Object.fromEntries(TQ_LEVELS.map(l => [l[0], all.filter(t => t.level === l[0]).length]));
+  const head = `<section class="panel"><header><div><h2>Technical questions</h2><p class="muted" style="font-size:.8rem;margin-top:2px">For the technical round. Each question lists what a good answer should mention, so you can judge it without being a developer.</p></div>
+    <div class="row">${all.length ? `<button class="btn" data-a="copyTQ">${ic("copy")}Copy all</button>` : ""}
+    <button class="btn ${all.length ? "" : "primary"}" data-a="genTQ" ${S.busy ? "disabled" : ""}>${all.length ? (S.confirm === "tq" + j.id ? "Confirm: replace generated questions" : "Regenerate") : "Generate with Claude"}</button></div></header>
+    ${busyBar("tq")}${errBar("tq")}
+    ${S.confirm === "tq" + j.id ? `<div class="callout">Regenerating replaces the questions Claude made. Questions you added yourself are kept.</div>` : ""}
+    ${all.length ? `<div class="row"><select id="tqSkill" aria-label="Filter by skill" style="width:auto"><option value="all">All skills</option>${skills.map(s => `<option value="${esc(s)}" ${S.tqSkill === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
+      <select id="tqLevel" aria-label="Filter by level" style="width:auto"><option value="all">All levels (${all.length})</option>${TQ_LEVELS.map(l => `<option value="${l[0]}" ${S.tqLevel === l[0] ? "selected" : ""}>${l[1]} (${counts[l[0]]})</option>`).join("")}</select></div>` : ""}
+  </section>`;
+  if (!all.length) return head + `<div class="empty">No technical questions yet.<br>Claude writes 3 per must-have skill (basic, intermediate, advanced), 1 per nice-to-have skill, and 4 real-world scenarios for this role.</div>` + tqAddForm(j, skills);
+  const groups = tqGroups(j, list).map(([skill, qs]) => `
+    <section class="panel"><header><h3>${esc(skill)} <span class="muted" style="font-weight:500">· ${qs.length}</span></h3>${arr(j.mandatory).some(m => m.toLowerCase() === skill.toLowerCase()) ? '<span class="chip must">Must-have</span>' : arr(j.preferred).some(m => m.toLowerCase() === skill.toLowerCase()) ? '<span class="chip">Nice-to-have</span>' : ""}</header>
+    ${qs.map(t => `<div class="tq">
+      <div class="row" style="justify-content:space-between;align-items:flex-start;flex-wrap:nowrap"><div class="row" style="flex-wrap:nowrap;align-items:flex-start;gap:10px"><span class="lvl ${t.level}">${tqLevelLabel(t.level)}</span><b>${esc(t.q)}</b></div>
+        <div class="row" style="flex-wrap:nowrap">${t.custom ? '<span class="fict" style="margin:0">Yours</span>' : ""}<button class="btn sm ghost" data-a="delTQ" data-id="${esc(t.id)}" aria-label="Delete question">${S.confirm === "tqd" + t.id ? "Confirm delete" : "Delete"}</button></div></div>
+      <div class="tqcols"><div><span class="cap" style="color:var(--good)">Good answer mentions</span>${ul(t.points)}</div>
+      <div><span class="cap" style="color:var(--bad)">Red flags</span>${ul(t.redFlags)}</div></div>
+    </div>`).join("")}</section>`).join("");
+  return head + (list.length ? groups : `<div class="empty">No questions match these filters.</div>`) + tqAddForm(j, skills);
+}
+function tqAddForm(j, skills) {
+  return `<section class="panel"><header><h2>Add your own question</h2></header>
+    <div class="grid2"><div class="field"><label class="label" for="tq_skill">Skill</label><select id="tq_skill">${[...skills, "General"].filter((v, i, a) => a.indexOf(v) === i).map(s => `<option ${S.draft.tq_skill === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select></div>
+    <div class="field"><label class="label" for="tq_level">Level</label><select id="tq_level">${TQ_LEVELS.map(l => `<option value="${l[0]}" ${(S.draft.tq_level || "intermediate") === l[0] ? "selected" : ""}>${l[1]}</option>`).join("")}</select></div></div>
+    <div class="field"><label class="label" for="tq_q">Question</label><textarea id="tq_q" rows="2">${esc(d("tq_q"))}</textarea></div>
+    <div class="grid2"><div class="field"><label class="label" for="tq_points">Good answer mentions <span class="muted">· one per line</span></label><textarea id="tq_points" rows="3">${esc(d("tq_points"))}</textarea></div>
+    <div class="field"><label class="label" for="tq_flags">Red flags <span class="muted">· one per line</span></label><textarea id="tq_flags" rows="3">${esc(d("tq_flags"))}</textarea></div></div>
+    ${errBar("tqadd")}<div class="row"><button class="btn primary" data-a="addTQ">${ic("plus")}Add question</button></div></section>`;
+}
+function tqText(j) {
+  return `Technical questions: ${j.title}\n\n` + tqGroups(j, j.techQs || []).map(([skill, qs]) => `== ${skill} ==\n` + qs.map((t, i) =>
+    `${i + 1}. [${tqLevelLabel(t.level)}] ${t.q}\n   Good answer mentions: ${arr(t.points).join("; ") || "—"}\n   Red flags: ${arr(t.redFlags).join("; ") || "—"}`).join("\n\n")).join("\n\n");
+}
+async function saveTQ(j, list) {
+  const out = clone(j); out.techQs = list;
+  if (S.ed && S.ed.id === j.id) S.ed.techQs = list.map(edTQ);
+  await saveJob(out);
+}
+const edTQ = t => ({id: t.id, skill: t.skill || "", level: t.level || "intermediate", q: t.q || "", points: arr(t.points).join("\n"), redFlags: arr(t.redFlags).join("\n"), custom: !!t.custom});
 function newJobForm() {
   return `<section class="panel">
     <div class="grid2"><div class="field"><label class="label" for="nj_code">Job code</label><input type="text" id="nj_code" placeholder="e.g. JAVA-014" value="${esc(d("nj_code"))}"></div>
@@ -733,6 +822,7 @@ function makeEd(j) {
   LINEF.forEach(k => e[k] = arr(j[k]).join("\n"));
   e.booleans = (j.booleans || []).map(b => ({label: b.label || "", query: b.query || "", why: b.why || ""}));
   e.questions = (j.questions || []).map(q => ({q: q.q || "", indicator: q.indicator || "", followUp: q.followUp || ""}));
+  e.techQs = (j.techQs || []).map(edTQ);
   ["title","code","seniority","location","workMode","budget","education","domain"].forEach(k => { if (e[k] === NM || e[k] == null) e[k] = ""; });
   return e;
 }
@@ -782,6 +872,17 @@ function editJobForm(j) {
       <div class="grid2"><input type="text" id="ed_q${i}_ind" data-edl="questions" data-i="${i}" data-k="indicator" value="${esc(q.indicator)}" placeholder="Good answer indicators" aria-label="Good answer indicators">
       <input type="text" id="ed_q${i}_fu" data-edl="questions" data-i="${i}" data-k="followUp" value="${esc(q.followUp)}" placeholder="Follow-up question" aria-label="Follow-up"></div>
     </div>`).join("") || `<p class="muted">No questions yet.</p>`}
+  </section>
+  <section class="panel"><header><h2>Technical questions</h2><button class="btn sm" data-a="addTQrow">${ic("plus")}Add question</button></header>
+    ${e.techQs.map((t, i) => `<div class="bool">
+      <div class="row" style="justify-content:space-between"><div class="row">
+        <input type="text" id="ed_t${i}_skill" data-edl="techQs" data-i="${i}" data-k="skill" value="${esc(t.skill)}" placeholder="Skill" aria-label="Skill" style="width:200px">
+        <select id="ed_t${i}_level" data-edl="techQs" data-i="${i}" data-k="level" aria-label="Level" style="width:auto">${TQ_LEVELS.map(l => `<option value="${l[0]}" ${t.level === l[0] ? "selected" : ""}>${l[1]}</option>`).join("")}</select></div>
+        <button class="btn sm danger" data-a="delRow" data-l="techQs" data-i="${i}">Remove</button></div>
+      <textarea id="ed_t${i}_q" data-edl="techQs" data-i="${i}" data-k="q" rows="2" placeholder="Question" aria-label="Question">${esc(t.q)}</textarea>
+      <div class="grid2"><textarea id="ed_t${i}_p" data-edl="techQs" data-i="${i}" data-k="points" rows="3" placeholder="Good answer mentions (one per line)" aria-label="Good answer mentions">${esc(t.points)}</textarea>
+      <textarea id="ed_t${i}_r" data-edl="techQs" data-i="${i}" data-k="redFlags" rows="3" placeholder="Red flags (one per line)" aria-label="Red flags">${esc(t.redFlags)}</textarea></div>
+    </div>`).join("") || `<p class="muted">No technical questions yet. Generate them in the Technical questions tab.</p>`}
   </section>
   <section class="panel"><header><h2>Notes for the hiring manager</h2></header>
     <div class="grid2">${ta("clarifications", "Questions to ask", 4, "one per line")}${ta("assumptions", "Assumptions made", 4, "one per line")}</div>
@@ -982,7 +1083,7 @@ Reason: ${s.why}`;
 }
 
 /* ---------- render ---------- */
-const VIEWS = ["dashboard","jobs","candidates","sourcing","questions","edit","screen","messages","help"];
+const VIEWS = ["dashboard","jobs","candidates","sourcing","questions","technical","edit","screen","messages","help"];
 function renderTop() {
   const j = activeJob(); const nC = j ? candsFor(j.id).length : 0;
   const cur = v => S.view === v || (v === "jobs" && (S.view === "sourcing" || S.view === "edit")) ? 'aria-current="page"' : "";
@@ -994,6 +1095,7 @@ function renderTop() {
     <a class="nv" href="#jobs" ${cur("jobs")}>${ic("brief")}Jobs<span class="ct">${S.jobs.length || ""}</span></a>
     <a class="nv" href="#candidates" ${cur("candidates")}>${ic("users")}Candidates<span class="ct">${nC || ""}</span></a>
     <a class="nv" href="#questions" ${cur("questions")}>${ic("list")}Screening questions</a>
+    <a class="nv" href="#technical" ${cur("technical")}>${ic("code")}Technical questions</a>
     <span class="grp">Process</span>
     <a class="nv" href="#screen" ${cur("screen")}>${ic("scan")}Screen resume</a>
     <a class="nv" href="#messages" ${cur("messages")}>${ic("mail")}Messages</a>
@@ -1006,11 +1108,11 @@ function renderTop() {
   const st = $("#status");
   st.className = "pill " + (S.mode === "shared" ? "ok" : S.mode === "local" ? "" : "wait");
   st.innerHTML = `<i></i>${S.mode === "shared" ? "Saved" : S.mode === "local" ? "Local only: not saved" : "Connecting"}`;
-  const jobView = ["jobs","candidates","sourcing","questions","edit"].includes(S.view);
+  const jobView = ["jobs","candidates","sourcing","questions","technical","edit"].includes(S.view);
   const names = {dashboard: ["Overview", "Dashboard"], screen: ["Process", "Screen resume"], messages: ["Process", "Messages"], help: ["Others", "Help"]};
   let crumb;
   if (jobView) {
-    const tab = {jobs: "Details", candidates: "Candidates", sourcing: "Sourcing", questions: "Screening questions", edit: "Edit"}[S.view];
+    const tab = {jobs: "Details", candidates: "Candidates", sourcing: "Sourcing", questions: "Screening questions", technical: "Technical questions", edit: "Edit"}[S.view];
     crumb = `<a href="#jobs">Jobs</a><span>/</span><b>${esc(S.newJob ? "New job" : j ? j.title : "No jobs yet")}</b>${!S.newJob && j && S.view !== "jobs" ? `<span>/</span><span>${tab}</span>` : ""}`;
   } else { const n = names[S.view] || names.dashboard; crumb = `<span>${n[0]}</span><span>/</span><b>${n[1]}</b>`; }
   $("#crumb").innerHTML = crumb;
@@ -1019,12 +1121,13 @@ function render() {
   const ae = document.activeElement, fid = ae && ae.id, sel = fid && "selectionStart" in ae ? (() => { try { return [ae.selectionStart, ae.selectionEnd]; } catch { return null; } })() : null;
   const dScroll = $(".drawer") ? $(".drawer").scrollTop : 0;
   renderTop();
-  const jobView = ["jobs","candidates","sourcing","questions","edit"].includes(S.view);
+  const jobView = ["jobs","candidates","sourcing","questions","technical","edit"].includes(S.view);
   let html = jobView ? vJob() : ({dashboard: vDashboard, screen: vScreen, messages: vMessages, help: vHelp}[S.view] || vDashboard)();
   if (S.mode === "local" && !["messages","help"].includes(S.view)) html = `<div class="callout info">This view can't reach the saved workspace, so changes stay in this tab only. Open the page in Claude while signed in to save jobs and candidates.</div>` + html;
   $("#view").innerHTML = html;
   $("#drawerRoot").innerHTML = drawer();
   if ($(".drawer")) $(".drawer").scrollTop = dScroll;
+  const seg = $("nav.seg"), curTab = seg && seg.querySelector('[aria-current="page"]'); if (curTab && seg.scrollWidth > seg.clientWidth) seg.scrollLeft = Math.max(0, curTab.offsetLeft - 24);
   if (fid) { const el = document.getElementById(fid); if (el && el !== document.activeElement) { el.focus({preventScroll: true}); if (sel && "setSelectionRange" in el) try { el.setSelectionRange(sel[0], sel[1]); } catch {} } }
 }
 function route() {
@@ -1086,9 +1189,41 @@ const A = {
     LINEF.forEach(k => out[k] = String(e[k] || "").split("\n").map(x => x.trim()).filter(Boolean));
     out.booleans = e.booleans.filter(b => t(b.query)).map(b => ({label: t(b.label) || "Search string", query: t(b.query), why: t(b.why)}));
     out.questions = e.questions.filter(q => t(q.q)).map(q => ({q: t(q.q), indicator: t(q.indicator), followUp: t(q.followUp)}));
+    const lines = v => String(v || "").split("\n").map(x => x.trim()).filter(Boolean);
+    out.techQs = (e.techQs || []).filter(x => t(x.q)).map(x => ({id: x.id || uid("t"), skill: t(x.skill) || "General", level: x.level || "intermediate", q: t(x.q), points: lines(x.points), redFlags: lines(x.redFlags), custom: !!x.custom}));
     try { await saveJob(out); S.ed = null; toast("Changes saved"); render(); } catch (err) { toast("Couldn't save. You may have view-only access."); }
   },
   addBool() { S.ed.booleans.push({label: "", query: "", why: ""}); render(); },
+  addTQrow() { S.ed.techQs.push({id: uid("t"), skill: "", level: "intermediate", q: "", points: "", redFlags: "", custom: true}); render(); },
+  async genTQ() {
+    const j = activeJob(); if (!j) return;
+    if (arr(j.techQs).length && S.confirm !== "tq" + j.id) { S.confirm = "tq" + j.id; return render(); }
+    S.confirm = null; S.err = null;
+    if (!arr(j.mandatory).length) { S.err = {kind: "tq", text: "Add mandatory skills to this job first (Edit tab)."}; return render(); }
+    try {
+      const r = await ai("tq", "Writing technical questions for each skill…", tqPrompt(j));
+      const gen = cleanTQ(r && (r.questions || r), false);
+      if (!gen.length) throw {code: "invalid_json"};
+      const keep = arr(activeJob().techQs).filter(t => t.custom);
+      S.tqSkill = "all"; S.tqLevel = "all";
+      await saveTQ(activeJob(), [...gen, ...keep]); toast(gen.length + " technical questions ready");
+    } catch (e) { S.err = {kind: "tq", text: errText(e)}; render(); }
+  },
+  async addTQ() {
+    const j = activeJob(); const q = (d("tq_q") || "").trim();
+    if (!q) { S.err = {kind: "tqadd", text: "Write the question first."}; return render(); }
+    S.err = null;
+    const lines = v => String(v || "").split("\n").map(x => x.trim()).filter(Boolean);
+    const item = {id: uid("t"), skill: $("#tq_skill").value, level: $("#tq_level").value, q, points: lines(d("tq_points")), redFlags: lines(d("tq_flags")), custom: true};
+    await saveTQ(j, [...arr(j.techQs), item]);
+    ["tq_q","tq_points","tq_flags"].forEach(k => S.draft[k] = ""); toast("Question added"); render();
+  },
+  async delTQ(el) {
+    const j = activeJob(), id = el.dataset.id;
+    if (S.confirm !== "tqd" + id) { S.confirm = "tqd" + id; return render(); }
+    S.confirm = null; await saveTQ(j, arr(j.techQs).filter(t => t.id !== id)); toast("Question deleted");
+  },
+  copyTQ() { copy(tqText(activeJob())); },
   addQ() { S.ed.questions.push({q: "", indicator: "", followUp: ""}); render(); },
   delRow(el) { S.ed[el.dataset.l].splice(Number(el.dataset.i), 1); render(); },
   moveQ(el) { const i = Number(el.dataset.i), k = i + Number(el.dataset.d), q = S.ed.questions; if (k < 0 || k >= q.length) return; [q[i], q[k]] = [q[k], q[i]]; render(); },
@@ -1168,12 +1303,12 @@ const A = {
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-a]"); if (!el) return;
   const fn = A[el.dataset.a]; if (!fn) return;
-  e.preventDefault(); if (el.dataset.a !== "delJob" && el.dataset.a !== "delCand") S.confirm = null;
+  e.preventDefault(); if (!["delJob","delCand","genTQ","delTQ"].includes(el.dataset.a)) S.confirm = null;
   fn(el);
 });
 document.addEventListener("input", e => {
   const t = e.target; if (!t.id) return;
-  if (["nj_jd","nj_code","nj_sourced","resText"].includes(t.id)) S.draft[t.id] = t.value;
+  if (["nj_jd","nj_code","nj_sourced","resText","tq_q","tq_points","tq_flags"].includes(t.id)) S.draft[t.id] = t.value;
   if (t.id === "c_notes") S.draft["c_notes_" + S.open] = t.value;
   if (t.id === "msgBody") S.msgText = t.value;
   if (t.id === "recName") { S.recruiter = t.value; lsSet("recruiter", t.value); }
@@ -1183,7 +1318,10 @@ document.addEventListener("input", e => {
 });
 document.addEventListener("change", async e => {
   const t = e.target;
-  if (t.id === "jobPick") { S.jobId = t.value; lsSet("jobId", t.value); S.newJob = false; S.editJob = false; S.msgCand = ""; S.msgText = null; S.err = null; S.page = 1; S.stageTab = "all"; return render(); }
+  if (t.id === "jobPick") { S.jobId = t.value; lsSet("jobId", t.value); S.newJob = false; S.editJob = false; S.msgCand = ""; S.msgText = null; S.err = null; S.page = 1; S.stageTab = "all"; S.tqSkill = "all"; S.tqLevel = "all"; return render(); }
+  if (t.id === "tqSkill") { S.tqSkill = t.value; return render(); }
+  if (t.id === "tqLevel") { S.tqLevel = t.value; return render(); }
+  if (t.id === "tq_skill" || t.id === "tq_level") { S.draft[t.id] = t.value; return; }
   if (t.id === "srcFilter") { S.srcFilter = t.value; S.page = 1; return render(); }
   if (t.id === "sortBy") { S.sort = t.value; return render(); }
   if (t.id === "resSource") { S.draft.resSource = t.value; return; }

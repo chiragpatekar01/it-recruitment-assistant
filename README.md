@@ -13,6 +13,7 @@ An AI-assisted workspace for IT recruiters. It turns job descriptions into struc
 | **Screen resume** | Upload a PDF, DOCX or TXT resume or paste the text. Each JD skill is graded as *hands-on*, *listed only*, *related tech* or *not evidenced*, with evidence from the resume. | 3 · Screening |
 | **Match score** | A fixed, weighted score calculated in the page, not by the AI, with a line-by-line explanation. Recruiters can correct any grade and the score updates. | 4 · Matching |
 | **Screening questions** | 8–12 questions per job and per candidate, with good-answer indicators and follow-ups. | 5 · Initial screening |
+| **Technical questions** | A question bank for the technical round: 3 levels (basic, intermediate, advanced) per must-have skill, 1 per nice-to-have skill, and role-based scenarios. Each lists what a good answer mentions and red flags, so non-technical recruiters can judge answers. Add, delete, filter and copy questions. | 5–6 · Technical round |
 | **Candidates** | Pipeline table with stage filters, search, source filter, sorting, a score-comparison view and a full evaluation panel per candidate. | 6 · Evaluation |
 | **Messages** | Drafts for outreach, interview scheduling, confirmation, feedback, follow-up, offer and rejection. Nothing is sent from the app. | 7 · Communication |
 | **Dashboard** | Funnel, conversion ratios (only when there is data) and a copyable status report. | 8 · Reporting |
