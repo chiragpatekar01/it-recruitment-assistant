@@ -1,0 +1,39 @@
+*** FICTIONAL TEST DATA – for testing IT Recruitment Assistant only ***
+
+Job Title: Java Backend Developer (Spring Boot)
+Client: Fictional payments company (via [Organization name])
+Location: Mumbai (Powai) – Hybrid, 2 days in office
+Experience: 3–6 years
+Budget: ₹10–16 LPA
+Notice Period: Immediate to 30 days preferred; maximum 45 days
+
+About the role
+We are hiring a Java Backend Developer to build and scale payment processing microservices for UPI and card transactions. You will design REST APIs, work with high-volume transactional databases and deploy services on AWS.
+
+Responsibilities
+- Design, build and maintain Spring Boot microservices and REST APIs
+- Write optimised SQL and work with PostgreSQL databases
+- Integrate services using Kafka for event-driven processing
+- Write unit and integration tests (JUnit, Mockito)
+- Deploy and monitor services on AWS using Docker and CI/CD pipelines
+- Participate in code reviews, sprint planning and production support rotation
+
+Must have
+- Java 11 or above (Java 17 preferred)
+- Spring Boot
+- REST APIs
+- Microservices architecture
+- PostgreSQL or MySQL
+- JUnit / Mockito
+- Git
+
+Good to have
+- Apache Kafka
+- AWS (EC2, ECS, RDS, S3)
+- Docker
+- Kubernetes
+- Redis
+- Jenkins or GitHub Actions
+
+Education: B.E./B.Tech in Computer Science/IT or MCA
+Domain: Payments / fintech experience preferred

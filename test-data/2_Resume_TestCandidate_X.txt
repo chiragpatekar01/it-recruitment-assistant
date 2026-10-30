@@ -1,0 +1,34 @@
+*** FICTIONAL TEST RESUME – not a real person ***
+
+TEST CANDIDATE X
+Senior Software Engineer | Mumbai (Andheri)
+Notice period: 30 days | Current CTC: ₹11.5 LPA | Expected CTC: ₹15 LPA
+
+SUMMARY
+Backend engineer with 5 years of experience building Java microservices for digital payments. Strong in Spring Boot, Kafka and PostgreSQL, with production experience on AWS.
+
+TECHNICAL SKILLS
+Java 17, Java 11, Spring Boot, Spring Data JPA, Hibernate, REST APIs, Microservices, Apache Kafka, PostgreSQL, Redis, JUnit 5, Mockito, Docker, AWS (ECS, RDS, S3, CloudWatch), Jenkins, Git, Maven
+
+EXPERIENCE
+Senior Software Engineer – PayQuill Technologies (fictional), Mumbai | Jun 2023 – Present
+- Built UPI transaction routing microservices in Spring Boot handling ~2 million transactions per day
+- Designed REST APIs for merchant settlement and refunds
+- Implemented Kafka-based event processing for payment status updates
+- Optimised PostgreSQL queries and indexes, cutting settlement report time from 40 to 6 minutes
+- Containerised services with Docker and deployed on AWS ECS through Jenkins pipelines
+- Wrote unit and integration tests with JUnit 5 and Mockito (coverage ~80%)
+
+Software Engineer – Cardline Systems (fictional), Pune | Jul 2021 – May 2023
+- Developed card authorisation APIs using Spring Boot and MySQL
+- Added Redis caching for BIN lookups
+- Participated in on-call production support rotation
+
+Associate Software Engineer – Brightcode Labs (fictional), Pune | Jul 2020 – Jun 2021
+- Maintained Java 8 Spring MVC modules for an internal HR portal
+
+EDUCATION
+B.Tech, Computer Engineering – 2020
+
+ACHIEVEMENTS
+- "Engineering Excellence" award, PayQuill, 2024

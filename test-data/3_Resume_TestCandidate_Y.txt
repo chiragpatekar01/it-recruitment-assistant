@@ -1,0 +1,27 @@
+*** FICTIONAL TEST RESUME – not a real person ***
+
+TEST CANDIDATE Y
+Java Developer | Thane
+Notice period: 60 days
+
+PROFILE
+Java developer with 6 years of experience in enterprise banking applications. Experienced in Spring framework, Oracle databases and SOAP/REST web services.
+
+SKILLS
+Core Java (Java 8), Spring MVC, Spring Boot (basic), REST, SOAP web services, Oracle 12c, PL/SQL, JUnit, SVN, Git, Jenkins, Agile
+
+EXPERIENCE
+Java Developer – Meridian Banking Software (fictional), Mumbai | Jan 2021 – Present
+- Maintain core banking loan module built on Spring MVC and Oracle
+- Write PL/SQL stored procedures for EMI and interest calculation
+- Exposed SOAP services to branch systems; converted two services to REST
+- Recently started a proof of concept moving one module to Spring Boot
+
+Software Developer – Tekvista Solutions (fictional), Navi Mumbai | Aug 2018 – Mar 2021
+- Built internal reporting screens using Java, JSP and Oracle
+- Wrote JUnit tests for service classes
+- Version control with SVN, later Git
+
+EDUCATION
+MCA – 2018
+B.Sc. (Computer Science) – 2015

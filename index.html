@@ -1,0 +1,1246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>IT Recruitment Assistant</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: framed HR workspace — grouped sidebar left, breadcrumb bar on top, job header + stats strip, tabbed content, candidate table; evaluation opens in a right drawer. */
+:root{
+  --page:#ECEEF0; --bg:#FFFFFF; --surface:#FFFFFF; --surface-2:#F6F7F8; --side:#FAFBFB; --ink:#1A1F25; --muted:#6B7480; --line:#E6E9EC; --line-2:#EFF1F3;
+  --accent:#1D6B56; --accent-ink:#FFFFFF; --accent-soft:#E5F1ED;
+  --good:#1F8A5B; --good-soft:#E3F4EB; --warn:#C27412; --warn-soft:#FCF0DE; --bad:#C2413B; --bad-soft:#FBE6E4; --info:#2D64B3; --info-soft:#E4EDF9;
+  --teal:#0E8C9A; --teal-soft:#DFF3F5; --violet:#6A4FC0; --violet-soft:#EEEAFB; --grey-soft:#EEF0F2;
+  --av1:#F3E3D3; --av2:#DCEBE4; --av3:#E0E7F6; --av4:#F2DEE4; --av5:#E9E4F5; --av6:#F1ECD2; --av-ink:#2B3138;
+  --shadow:0 12px 32px rgba(20,28,36,.14);
+  --f-body:"Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#0B0F12; --bg:#12171B; --surface:#161C21; --surface-2:#1C2329; --side:#14191E; --ink:#E6EBEF; --muted:#94A0AB; --line:#283139; --line-2:#20282F;
+  --accent:#4FBE9C; --accent-ink:#06150F; --accent-soft:#163229;
+  --good:#5CCB92; --good-soft:#15301F; --warn:#E8AE57; --warn-soft:#352813; --bad:#F0847D; --bad-soft:#3A1B1A; --info:#86AEEA; --info-soft:#1A2840;
+  --teal:#5CC9D4; --teal-soft:#123138; --violet:#B2A0F0; --violet-soft:#272042; --grey-soft:#232B32;
+  --av1:#3B2E22; --av2:#1F3A2F; --av3:#22304A; --av4:#3D2530; --av5:#2E2746; --av6:#38331B; --av-ink:#E6EBEF;
+  --shadow:0 12px 32px rgba(0,0,0,.55); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --page:#0B0F12; --bg:#12171B; --surface:#161C21; --surface-2:#1C2329; --side:#14191E; --ink:#E6EBEF; --muted:#94A0AB; --line:#283139; --line-2:#20282F;
+  --accent:#4FBE9C; --accent-ink:#06150F; --accent-soft:#163229;
+  --good:#5CCB92; --good-soft:#15301F; --warn:#E8AE57; --warn-soft:#352813; --bad:#F0847D; --bad-soft:#3A1B1A; --info:#86AEEA; --info-soft:#1A2840;
+  --teal:#5CC9D4; --teal-soft:#123138; --violet:#B2A0F0; --violet-soft:#272042; --grey-soft:#232B32;
+  --av1:#3B2E22; --av2:#1F3A2F; --av3:#22304A; --av4:#3D2530; --av5:#2E2746; --av6:#38331B; --av-ink:#E6EBEF;
+  --shadow:0 12px 32px rgba(0,0,0,.55); color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--ink);font-family:var(--f-body);font-size:13.5px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px}
+h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:1.3rem;font-weight:700}
+h2{font-size:1.02rem;font-weight:700}
+h3{font-size:.9rem;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.i{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.mono{font-family:var(--f-mono);font-size:.84em}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.label{font-size:.72rem;color:var(--muted);font-weight:500}
+.cap{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+
+/* frame */
+.app{max-width:1440px;margin:0 auto;background:var(--bg);border:1px solid var(--line);border-radius:16px;display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - 40px);overflow:hidden}
+.side{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 12px;gap:4px}
+.logo{display:flex;align-items:center;gap:10px;padding:2px 8px 16px}
+.logo .mk{width:34px;height:34px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:700;font-size:.82rem;flex:none}
+.logo b{display:block;font-size:.86rem;line-height:1.25}
+.logo small{color:var(--muted);font-size:.74rem}
+.side .grp{font-size:.66rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:12px 10px 4px}
+.side a.nv{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500;font-size:.86rem}
+.side a.nv:hover{background:var(--surface-2)}
+.side a.nv[aria-current="page"]{background:var(--accent-soft);color:var(--accent)}
+.side a.nv .ct{margin-left:auto;font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;align-items:center;gap:10px;padding:10px 8px;border-top:1px solid var(--line);padding-top:14px}
+.who b{display:block;font-size:.84rem}
+.who small{color:var(--muted);font-size:.74rem}
+.mainc{display:flex;flex-direction:column;min-width:0}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 22px;border-bottom:1px solid var(--line)}
+.crumb{display:flex;align-items:center;gap:8px;font-size:.86rem;color:var(--muted);min-width:0;flex:1 1 220px}
+.crumb b{color:var(--ink);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumb a{color:var(--muted);text-decoration:none} .crumb a:hover{color:var(--ink)}
+.barR{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.barR select{width:auto;max-width:300px;padding:6px 10px;font-size:.82rem}
+#view{padding:20px 22px 48px;display:flex;flex-direction:column;gap:18px;min-width:0}
+
+@media (max-width:900px){
+  body{padding:0;padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+  .app{grid-template-columns:1fr;border-radius:0;border:0;min-height:100vh}
+  .side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px 16px;gap:4px;align-items:center}
+  .logo{padding:0 8px 0 0}
+  .logo div{display:none}
+  .side .grp,.who{display:none}
+  .side a.nv{white-space:nowrap;padding:7px 10px}
+  .bar{padding:10px 16px}
+  .barR{width:100%;flex-wrap:nowrap}
+  .barR select{flex:1;max-width:none;min-width:0}
+  #view{padding:16px 16px 40px}
+}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);padding:7px 12px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.82rem;white-space:nowrap;text-decoration:none;color:var(--ink)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07);background:var(--accent)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--accent)}
+.btn.icon{padding:7px;width:34px;height:34px;justify-content:center}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:4px 9px;font-size:.76rem;border-radius:6px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+input[type=text],input[type=number],input[type=search],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;width:100%;min-width:0;font-size:.86rem}
+textarea{resize:vertical;line-height:1.5}
+select{cursor:pointer}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 16px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.search{position:relative;flex:0 1 260px;min-width:160px}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{padding-left:32px;background:var(--surface-2)}
+
+/* page header */
+.jhead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.jhead .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:.8rem;color:var(--muted)}
+.status{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:5px}
+.status.open{background:var(--good-soft);color:var(--good)} .status.hold{background:var(--warn-soft);color:var(--warn)} .status.closed{background:var(--grey-soft);color:var(--muted)}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+.strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.strip > div{padding:12px 16px;display:flex;flex-direction:column;gap:4px;border-left:1px solid var(--line);min-width:0;align-items:center;text-align:center}
+.strip > div:first-child{border-left:0}
+.strip .label{display:flex;align-items:center;gap:6px}
+.strip .label svg{width:14px;height:14px}
+.strip b{font-size:.92rem;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.strip.big b{font-size:1.55rem;font-weight:700}
+@media (max-width:1000px){.strip{grid-template-columns:repeat(3,minmax(0,1fr))} .strip > div:nth-child(4){border-left:0} .strip > div:nth-child(n+4){border-top:1px solid var(--line)}}
+@media (max-width:520px){.strip{grid-template-columns:repeat(2,minmax(0,1fr))} .strip > div{border-left:0!important;border-top:1px solid var(--line)} .strip > div:nth-child(-n+2){border-top:0} .strip > div:nth-child(even){border-left:1px solid var(--line)!important}}
+
+/* tabs */
+.tabsbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:2px;overflow-x:auto;max-width:100%}
+.seg a,.seg button{border:0;background:transparent;padding:6px 12px;border-radius:7px;font-weight:600;font-size:.82rem;color:var(--muted);text-decoration:none;cursor:pointer;white-space:nowrap}
+.seg a[aria-current="page"],.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.under{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.under button{border:0;background:transparent;padding:10px 12px;font-weight:500;font-size:.84rem;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px}
+.under button[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel > header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.cols > *{min-width:0}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+th{font-size:.74rem;color:var(--muted);font-weight:500;background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--surface-2)}
+.table-card .tablewrap{border-radius:0 0 12px 12px}
+.cardhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px}
+.cardhead .search{flex:1 1 240px;max-width:340px}
+.savebar{position:sticky;bottom:calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:12px 16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 24px rgba(20,28,36,.1);z-index:5}
+.seg a svg{width:13px;height:13px;vertical-align:-2px}
+.cardfoot{padding:10px 14px;border-top:1px solid var(--line-2);font-size:.74rem;color:var(--muted)}
+.rowgo{color:var(--muted);display:inline-flex}
+tbody tr.click:hover .rowgo{color:var(--accent)}
+.jhead h1{font-size:1.35rem}
+th{letter-spacing:.01em}
+.pp{display:flex;align-items:center;gap:10px;min-width:180px}
+.pp b{display:block;font-weight:600;font-size:.86rem}
+.pp small{color:var(--muted);font-size:.76rem;display:block;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.74rem;color:var(--av-ink);flex:none}
+.av.a1{background:var(--av1)}.av.a2{background:var(--av2)}.av.a3{background:var(--av3)}.av.a4{background:var(--av4)}.av.a5{background:var(--av5)}.av.a6{background:var(--av6)}
+.stg{font-size:.74rem;font-weight:600;padding:3px 8px;border-radius:5px;white-space:nowrap}
+.stg.screened,.stg.sourced{background:var(--good-soft);color:var(--good)}
+.stg.shortlisted{background:var(--warn-soft);color:var(--warn)}
+.stg.interview_scheduled,.stg.interview_done{background:var(--info-soft);color:var(--info)}
+.stg.selected{background:var(--teal-soft);color:var(--teal)}
+.stg.offered{background:var(--violet-soft);color:var(--violet)}
+.stg.joined{background:var(--accent-soft);color:var(--accent)}
+.stg.on_hold{background:var(--grey-soft);color:var(--muted)}
+.stg.rejected{background:var(--bad-soft);color:var(--bad)}
+.tag{font-size:.74rem;padding:2px 8px;border-radius:5px;border:1px solid var(--line);white-space:nowrap;color:var(--ink)}
+.tags{display:flex;gap:5px;flex-wrap:nowrap}
+.src{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-weight:500}
+.src i{width:18px;height:18px;border-radius:4px;display:grid;place-items:center;font-style:normal;font-size:.64rem;font-weight:700;color:#fff}
+.src.linkedin i{background:#2E68B0} .src.naukri i{background:#3A79C9} .src.referral i{background:var(--violet)} .src.website i{background:var(--accent)} .src.portal i{background:var(--warn)} .src.other i{background:var(--muted)}
+.mscore{display:flex;align-items:center;gap:8px;min-width:96px}
+.mscore b{font-variant-numeric:tabular-nums;font-weight:600;width:36px}
+.mscore span{flex:1;height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden;min-width:40px}
+.mscore span i{display:block;height:100%;border-radius:3px}
+.pager{display:flex;justify-content:center;align-items:center;gap:6px;padding:14px;border-top:1px solid var(--line-2);flex-wrap:wrap}
+.pager button{min-width:32px;height:32px;border:1px solid var(--line);background:var(--surface);border-radius:7px;cursor:pointer;font-weight:500;font-size:.8rem;padding:0 10px}
+.pager button[aria-current="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.pager button[disabled]{opacity:.45;cursor:not-allowed}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:.78rem;padding:3px 9px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.chip.must{background:var(--accent-soft);border-color:transparent;color:var(--accent);font-weight:600}
+.band{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap}
+.band.strong{background:var(--good-soft);color:var(--good)} .band.good{background:var(--info-soft);color:var(--info)}
+.band.partial{background:var(--warn-soft);color:var(--warn)} .band.low{background:var(--bad-soft);color:var(--bad)}
+.lv{font-size:.74rem;font-weight:600;padding:2px 8px;border-radius:5px;white-space:nowrap}
+.lv.hands-on{background:var(--good-soft);color:var(--good)} .lv.listed,.lv.related{background:var(--warn-soft);color:var(--warn)} .lv.none{background:var(--bad-soft);color:var(--bad)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;padding:4px 10px;border-radius:999px;background:var(--surface-2);color:var(--muted);white-space:nowrap;border:1px solid var(--line)}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.pill.ok i{background:var(--good)} .pill.wait i{background:var(--warn)}
+
+.score-ring{--p:0;width:80px;height:80px;border-radius:50%;display:grid;place-items:center;flex:none;background:conic-gradient(var(--ring,var(--accent)) calc(var(--p)*1%), var(--surface-2) 0)}
+.score-ring > div{width:64px;height:64px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-weight:700;font-size:1.25rem;font-variant-numeric:tabular-nums}
+.bool{background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.bool pre{margin:0;white-space:pre-wrap;word-break:break-word;font-family:var(--f-mono);font-size:.8rem;line-height:1.6}
+.bool .op{color:var(--accent);font-weight:500} .bool .q{color:var(--info)}
+.funnel{display:flex;flex-direction:column;gap:8px}
+.frow{display:grid;grid-template-columns:150px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:.84rem}
+.fbar{height:18px;border-radius:5px;background:var(--surface-2);overflow:hidden}
+.fbar span{display:block;height:100%;background:var(--accent);border-radius:5px}
+.frow.side2 .fbar span{background:var(--muted)}
+@media (max-width:520px){.frow{grid-template-columns:110px minmax(0,1fr) 34px}}
+.callout{border:1px solid var(--warn-soft);background:var(--warn-soft);padding:10px 14px;border-radius:10px;font-size:.84rem}
+.callout.info{border-color:var(--info-soft);background:var(--info-soft)}
+.callout.bad{border-color:var(--bad-soft);background:var(--bad-soft)}
+.empty{border:1px dashed var(--line);border-radius:12px;padding:32px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:10px;align-items:center}
+ul.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+dl.kv{display:grid;grid-template-columns:minmax(120px,180px) minmax(0,1fr);gap:8px 16px;margin:0;font-size:.86rem}
+dl.kv dt{color:var(--muted)} dl.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
+@media (max-width:520px){dl.kv{grid-template-columns:1fr} dl.kv dd{margin-bottom:6px}}
+.busy{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+.scrim{position:fixed;inset:0;background:rgba(10,15,20,.4);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(780px,100%);background:var(--page);z-index:41;box-shadow:var(--shadow);overflow-y:auto;
+  padding-top:calc(18px + env(safe-area-inset-top,0px));padding-bottom:calc(40px + env(safe-area-inset-bottom,0px));
+  padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.drawer .dhead{display:flex;gap:16px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.drawer .dhead .whod{flex:1;min-width:200px;display:flex;flex-direction:column;gap:4px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:8px;z-index:60;font-size:.84rem;max-width:calc(100% - 32px)}
+.fict{font-size:.64rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:var(--grey-soft);padding:1px 6px;border-radius:4px;vertical-align:middle;margin-left:4px}
+.msgcols{display:grid;grid-template-columns:300px minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:760px){.msgcols{grid-template-columns:1fr}}
+.msgbox{min-height:300px}
+.wt{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.wt div{border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.wt b{font-size:1.25rem}
+</style>
+
+<div class="app">
+  <aside class="side" id="side"></aside>
+  <div class="mainc">
+    <header class="bar">
+      <div class="crumb" id="crumb"></div>
+      <div class="barR">
+        <select id="jobPick" aria-label="Active job"></select>
+        <span id="status" class="pill wait"><i></i>Connecting</span>
+      </div>
+    </header>
+    <div id="view"></div>
+  </div>
+</div>
+<div id="drawerRoot"></div>
+<div id="toastRoot"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const NM = "Not Mentioned";
+const nm = v => (v === null || v === undefined || v === "" ) ? NM : v;
+const lsGet = k => { try { return localStorage.getItem("srd_" + k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem("srd_" + k, v); } catch {} };
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const arr = v => Array.isArray(v) ? v : (typeof v === "string" && v.trim() ? v.split(",").map(s => s.trim()).filter(Boolean) : []);
+const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+const fmt = n => (Math.round(n * 10) / 10).toFixed(1).replace(/\.0$/, "");
+
+const STAGES = [
+  {k:"sourced", l:"Sourced"}, {k:"screened", l:"Screened"}, {k:"shortlisted", l:"Shortlisted"},
+  {k:"interview_scheduled", l:"Interview scheduled"}, {k:"interview_done", l:"Interview completed"},
+  {k:"selected", l:"Selected"}, {k:"offered", l:"Offer made"}, {k:"joined", l:"Joined"}];
+const SIDE = [{k:"on_hold", l:"On hold"}, {k:"rejected", l:"Rejected"}];
+const ALLSTAGES = [...STAGES, ...SIDE];
+const stageLabel = k => (ALLSTAGES.find(s => s.k === k) || {l: k || "Screened"}).l;
+const stageIdx = k => STAGES.findIndex(s => s.k === k);
+const NEXT = ["Proceed to technical interview", "Conduct additional screening", "Keep on hold", "Not aligned with current JD"];
+const LEVELS = [{k:"hands-on", l:"Hands-on"}, {k:"listed", l:"Listed only"}, {k:"related", l:"Related tech"}, {k:"none", l:"Not evidenced"}];
+const LV = {"hands-on":1, listed:.5, related:.5, none:0};
+
+const S = {
+  jobs: [], cands: [], jobId: lsGet("jobId") || "", view: "dashboard",
+  db: null, sample: null, samplePromise: null, mode: "connecting",
+  open: null, draft: {}, busy: null, ctl: null, confirm: null, editJob: false, newJob: false,
+  lastScreen: null, err: null, dashAll: true,
+  recruiter: lsGet("recruiter") || "", msgType: "outreach", msgCand: "", msgText: null,
+  q: "", srcFilter: "", sort: "score", layout: "list", stageTab: "all", page: 1
+};
+
+/* ---------- scoring (transparent, deterministic) ---------- */
+function align(list, skills) {
+  const by = new Map((list || []).map(s => [String(s.skill || "").toLowerCase(), s]));
+  return (skills || []).map(sk => by.get(String(sk).toLowerCase()) || {skill: sk, level: "none", evidence: "Not assessed"});
+}
+function score(c, j) {
+  j = j || {};
+  const man = align(c.mandatory, arr(j.mandatory)), pre = align(c.preferred, arr(j.preferred));
+  const parts = [], flags = [];
+  const mSum = man.reduce((a, s) => a + (LV[s.level] ?? 0), 0);
+  const mPts = man.length ? 40 * mSum / man.length : 0;
+  parts.push({label:"Mandatory technical skills", w:40, pts:mPts,
+    how: man.length ? `${man.length} skills × ${fmt(40/man.length)} pts. Hands-on = full, listed or related = half, not evidenced = 0.` : "No mandatory skills defined on the requisition."});
+  const minY = Number(j.minYears) || 0, ry = c.relevantYears;
+  let ePts = 0, eHow;
+  if (ry === null || ry === undefined || ry === "" || isNaN(Number(ry))) { eHow = "Relevant experience not mentioned: 0, verify."; flags.push("Relevant experience not stated"); }
+  else if (minY > 0) { ePts = 25 * Math.min(Number(ry) / minY, 1); eHow = `${fmt(Number(ry))} relevant yrs ÷ ${minY} required, capped at 100%.`; }
+  else { ePts = Number(ry) > 0 ? 25 : 0; eHow = "No minimum set on the requisition: full marks for any relevant experience."; }
+  parts.push({label:"Relevant experience", w:25, pts:ePts, how:eHow});
+  const proj = clamp(Number(c.projectRelevance) || 0, 0, 10);
+  const domReq = j.domainRequired || "none";
+  let dPts, dHow;
+  if (domReq === "none") { dPts = 5; dHow = "no domain asked: +5"; }
+  else if (c.domainMatch === "yes") { dPts = 5; dHow = "domain matches: +5"; }
+  else if (c.domainMatch === "unknown" || !c.domainMatch) { dPts = 2.5; dHow = "domain not mentioned: +2.5, verify"; flags.push("Domain experience unclear"); }
+  else { dPts = 0; dHow = "different domain: +0"; }
+  parts.push({label:"Project / domain experience", w:15, pts:proj + dPts, how:`Project relevance ${proj}/10; ${dHow}.`});
+  const pSum = pre.reduce((a, s) => a + (LV[s.level] ?? 0), 0);
+  const pPts = pre.length ? 10 * pSum / pre.length : 10;
+  parts.push({label:"Preferred technical skills", w:10, pts:pPts, how: pre.length ? `${pre.length} skills × ${fmt(10/pre.length)} pts, same evidence rule.` : "No preferred skills on the requisition: full marks."});
+  const eduNM = !j.education || j.education === NM;
+  let eduPts = eduNM ? 5 : ({meets:5, partial:2.5, unknown:2.5}[c.educationMatch] ?? 0);
+  if (!eduNM && (c.educationMatch === "unknown" || !c.educationMatch)) { eduPts = 2.5; flags.push("Education not stated"); }
+  parts.push({label:"Education / certifications", w:5, pts:eduPts, how: eduNM ? "No requirement on the requisition: full marks." : `Education ${c.educationMatch || "unknown"}: meets 5, partial or not mentioned 2.5, does not meet 0.`});
+  const locNM = !j.location || j.location === NM;
+  let lPts = locNM ? 2.5 : ({fits:2.5, relocation:1.25, unknown:1.25}[c.locationFit] ?? 0);
+  if (!locNM && (c.locationFit === "unknown" || !c.locationFit)) { lPts = 1.25; flags.push("Location not stated"); }
+  const nd = c.noticeDays, np = j.noticePreferredDays, nx = j.noticeMaxDays;
+  let nPts, nHow;
+  if (nd === null || nd === undefined || nd === "" || isNaN(Number(nd))) { nPts = 1.25; nHow = "notice not mentioned 1.25"; flags.push("Notice period not stated"); }
+  else if ((np == null || np === "") && (nx == null || nx === "")) { nPts = 2.5; nHow = "no notice limit set 2.5"; }
+  else if (np != null && np !== "" && Number(nd) <= Number(np)) { nPts = 2.5; nHow = `${nd}d within preferred ${np}d: 2.5`; }
+  else if (nx != null && nx !== "" && Number(nd) <= Number(nx)) { nPts = 1.25; nHow = `${nd}d within max ${nx}d: 1.25`; }
+  else if (nx == null || nx === "") { nPts = 1.25; nHow = `${nd}d beyond preferred: 1.25`; }
+  else { nPts = 0; nHow = `${nd}d exceeds max ${nx}d: 0`; }
+  parts.push({label:"Role and location requirements", w:5, pts:lPts + nPts, how:`Location ${c.locationFit || "unknown"} ${lPts}; ${nHow}.`});
+  const total = Math.round(parts.reduce((a, p) => a + p.pts, 0) * 10) / 10;
+  const band = total >= 85 ? ["strong","Strong alignment"] : total >= 70 ? ["good","Good alignment"] : total >= 55 ? ["partial","Partial alignment"] : ["low","Low alignment"];
+  const missing = man.filter(s => s.level === "none").map(s => s.skill);
+  const weak = man.filter(s => s.level === "listed" || s.level === "related").map(s => s.skill);
+  const overNotice = nx != null && nx !== "" && nd != null && nd !== "" && Number(nd) > Number(nx);
+  let next, why;
+  if (total >= 85 && !missing.length && !overNotice) { next = NEXT[0]; why = "Strong alignment with every mandatory skill evidenced."; }
+  else if (total >= 70 && !overNotice) { next = NEXT[1]; why = missing.length ? `Good overall, but ${missing.join(", ")} not evidenced.` : weak.length ? `Verify depth in ${weak.join(", ")} before the technical round.` : "Good alignment; confirm details in a short screen."; }
+  else if (total >= 55 || (overNotice && total >= 70)) { next = NEXT[2]; why = overNotice ? "Notice period exceeds the requisition's maximum." : `Partial alignment${missing.length ? "; missing " + missing.join(", ") : ""}.`; }
+  else { next = NEXT[3]; why = `Low alignment${missing.length ? "; missing " + missing.join(", ") : ""}.`; }
+  return {total, parts, band, missing, weak, man, pre, flags, next, why};
+}
+
+/* ---------- data layer ---------- */
+const use = n => (window.claude && window.claude.use) ? window.claude.use(n).catch(() => null) : Promise.resolve(null);
+async function saveJob(job) {
+  job.updatedAt = Date.now();
+  if (S.db) await S.db.collection("jobs").doc(job.id).set(strip(job));
+  else { const i = S.jobs.findIndex(x => x.id === job.id); if (i >= 0) S.jobs[i] = job; else S.jobs.unshift(job); render(); }
+}
+async function saveCand(c) {
+  c.updatedAt = Date.now();
+  if (S.db) await S.db.collection("candidates").doc(c.id).set(strip(c));
+  else { const i = S.cands.findIndex(x => x.id === c.id); if (i >= 0) S.cands[i] = c; else S.cands.unshift(c); render(); }
+}
+async function delDoc(col, id) {
+  if (S.db) await S.db.collection(col).doc(id).delete();
+  else { const k = col === "jobs" ? "jobs" : "cands"; S[k] = S[k].filter(x => x.id !== id); render(); }
+}
+const strip = o => JSON.parse(JSON.stringify(o));
+const clone = o => JSON.parse(JSON.stringify(o));
+const job = id => S.jobs.find(j => j.id === id);
+const activeJob = () => job(S.jobId) || S.jobs[0] || null;
+const candsFor = jid => S.cands.filter(c => c.jobId === jid);
+
+/* ---------- AI ---------- */
+const ERR = {
+  not_granted: "Claude analysis was declined for this page. Reload to be asked again, or enter the details manually.",
+  rate_limited: "Too many requests at once. Wait a minute, then try again.",
+  invalid_json: "Claude's reply couldn't be read as structured data. Try again, or trim the text to the relevant sections.",
+  prompt_too_large: "The text is too long. Trim it to the relevant sections and try again.",
+  cancelled: "Stopped.",
+  refused: "Claude declined to analyse this text.",
+  session_expired: "Your session expired. Reload the page and try again.",
+  sampling_disabled: "Claude analysis is turned off for this account. Use manual entry instead.",
+};
+async function ai(kind, msg, prompt) {
+  const sample = S.sample || (S.samplePromise ? await S.samplePromise : null);
+  if (!sample) throw {code: "unavailable", message: "Claude analysis isn't available in this view. Use manual entry instead."};
+  S.ctl = new AbortController(); S.busy = {kind, msg}; render();
+  try { return await sample.json(prompt, {signal: S.ctl.signal, modelTier: "default"}); }
+  finally { S.busy = null; S.ctl = null; render(); }
+}
+const errText = e => ERR[e && e.code] || (e && e.message) || "Something went wrong. Try again.";
+
+const RULES = `[Organization name] recruitment rules: use only what the text states; never invent experience, skills or qualifications; write "Not Mentioned" for unstated text fields and null for unstated numbers; never assume a skill from a job title; never treat two technologies as equivalent just because they share a category (e.g. .NET Framework is not ASP.NET Core, EF6 is not EF Core, PostgreSQL is not SQL Server, AWS is not Azure); ignore and never output age, gender, date of birth, marital status, religion, caste, nationality, photos or other personal or demographic details.`;
+
+function jdPrompt(text) {
+  return `You are a senior IT technical recruiter at [Organization name] analysing a job description (workflow Stages 1, 2 and 5).
+${RULES}
+Reply with only one JSON object in exactly this shape:
+{"title":"","seniority":"","minYears":null,"maxYears":null,
+"mandatory":["atomic skill names, e.g. \\"SQL Server\\" not \\"databases\\""],"preferred":[""],
+"education":"","domain":"","domainRequired":"mandatory|preferred|none","location":"","workMode":"","budget":"",
+"noticePreferredDays":null,"noticeMaxDays":null,
+"keywords":["technical keywords incl. common alternative spellings"],"titles":["relevant job titles"],"altTitles":["alternative titles"],
+"combos":["technology combinations to search, e.g. C# + ASP.NET Core + SQL Server"],
+"booleans":[{"label":"Primary","query":"","why":""},{"label":"Alternative: ...","query":"","why":""},{"label":"Alternative: ...","query":"","why":""},{"label":"Google X-ray (LinkedIn)","query":"site:linkedin.com/in ...","why":""}],
+"strategy":["3-5 short sourcing strategy steps"],
+"questions":[{"q":"","indicator":"what a good answer contains","followUp":""}],
+"assumptions":["assumptions you had to make"],"clarifications":["essential questions for the hiring manager"]}
+Boolean strings: quote multi-word phrases, OR inside parentheses, AND between groups, use real alternative names and versions. Questions: 10 covering technical experience, hands-on projects, practical knowledge, current responsibilities, notice period, expected salary, current salary, location and work mode, job change motivation, interview availability.
+
+JOB DESCRIPTION:
+"""
+${text}
+"""`;
+}
+function resumePrompt(j, text) {
+  const req = {title:j.title, minYears:j.minYears, mandatory:arr(j.mandatory), preferred:arr(j.preferred), education:j.education, domain:j.domain, domainRequired:j.domainRequired, location:j.location, workMode:j.workMode, noticePreferredDays:j.noticePreferredDays, noticeMaxDays:j.noticeMaxDays};
+  return `You are a senior IT technical recruiter at [Organization name] screening one resume against a requisition (workflow Stages 3, 5 and 6).
+${RULES}
+Evidence levels for each JD skill: "hands-on" = used in a described role or project; "listed" = only appears in a skills list or summary with no project evidence; "related" = the resume shows a different but adjacent technology (name it in evidence); "none" = not evidenced.
+Reply with only one JSON object in exactly this shape:
+{"name":"","designation":"","totalYears":null,"relevantYears":null,"relevantBasis":"what you counted as relevant experience",
+"skills":["technical skills on the resume"],"projects":["one line per relevant project"],"domainExperience":"","education":"","certifications":[""],
+"location":"","noticeDays":null,"noticeText":"","currentCtc":"","expectedCtc":"","achievements":[""],
+"mandatory":[{"skill":"exact JD skill name","level":"hands-on|listed|related|none","evidence":"short paraphrase from the resume, or Not Mentioned"}],
+"preferred":[{"skill":"exact JD skill name","level":"hands-on|listed|related|none","evidence":""}],
+"projectRelevance":0,"projectReason":"why, 0-10 integer for how relevant the projects are to this role",
+"domainMatch":"yes|no|unknown","educationMatch":"meets|partial|does-not-meet|unknown","locationFit":"fits|relocation|mismatch|unknown",
+"concerns":["technical concerns or gaps"],"verify":["potential inconsistencies (date overlaps, gaps, unclear claims) phrased neutrally for recruiter verification, never as dishonesty"],
+"questions":[{"q":"","indicator":"","followUp":""}]}
+Include every requisition skill in mandatory/preferred exactly once, using the requisition's spelling. Give 8-10 questions tailored to this candidate's gaps, plus notice, salary, location and availability.
+
+REQUISITION:
+${JSON.stringify(req)}
+
+RESUME:
+"""
+${text}
+"""`;
+}
+
+/* ---------- file reading ---------- */
+const loaded = {};
+function loadScript(src) {
+  if (loaded[src]) return loaded[src];
+  return loaded[src] = new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("load")); document.head.appendChild(s); });
+}
+async function readFile(file) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith(".txt") || name.endsWith(".md") || file.type.startsWith("text/")) return await file.text();
+  if (name.endsWith(".pdf")) {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    const lib = window.pdfjsLib; lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const pdf = await lib.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise;
+    let out = [];
+    for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) { const p = await pdf.getPage(i); const t = await p.getTextContent(); out.push(t.items.map(x => x.str + (x.hasEOL ? "\n" : " ")).join("")); }
+    return out.join("\n\n");
+  }
+  if (name.endsWith(".docx")) {
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js");
+    const r = await window.mammoth.extractRawText({arrayBuffer: await file.arrayBuffer()}); return r.value;
+  }
+  throw new Error("Use a .pdf, .docx or .txt file, or paste the resume text.");
+}
+
+/* ---------- helpers ---------- */
+function toast(t) { const r = $("#toastRoot"); r.innerHTML = `<div class="toast" role="status">${esc(t)}</div>`; clearTimeout(toast.t); toast.t = setTimeout(() => r.innerHTML = "", 2400); }
+async function copy(text, btn) {
+  try { await navigator.clipboard.writeText(text); toast("Copied"); }
+  catch { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); try { document.execCommand("copy"); toast("Copied"); } catch { toast("Select the text and copy it manually"); } ta.remove(); }
+}
+const hlBool = q => esc(q).replace(/(&quot;.*?&quot;)/g, '<span class="q">$1</span>').replace(/\b(AND|OR|NOT)\b/g, '<span class="op">$1</span>');
+const bandEl = sc => `<span class="band ${sc.band[0]}">${sc.band[1]}</span>`;
+const ringColor = b => ({strong:"var(--good)", good:"var(--info)", partial:"var(--warn)", low:"var(--bad)"}[b]);
+const chips = (a, cls = "") => arr(a).length ? `<div class="chips">${arr(a).map(x => `<span class="chip ${cls}">${esc(x)}</span>`).join("")}</div>` : `<span class="muted">${NM}</span>`;
+const ul = a => arr(a).length ? `<ul class="plain">${arr(a).map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : `<span class="muted">None noted</span>`;
+const d = id => S.draft[id] ?? "";
+const fictTag = o => o && o.fictional ? ` <span class="fict">Fictional</span>` : "";
+
+/* ---------- reporting ---------- */
+function metrics(jobs) {
+  const ids = new Set(jobs.map(j => j.id));
+  const cs = S.cands.filter(c => ids.has(c.jobId));
+  const reached = k => cs.filter(c => (c.furthest ?? Math.max(stageIdx(c.stage), 1)) >= stageIdx(k)).length;
+  const sourced = Math.max(jobs.reduce((a, j) => a + (Number(j.sourcedCount) || 0), 0), cs.length);
+  return {
+    sourced, screened: cs.length, shortlisted: reached("shortlisted"),
+    rejected: cs.filter(c => c.stage === "rejected").length,
+    pending: cs.filter(c => c.stage === "screened" || c.stage === "on_hold" || !c.stage).length,
+    iSched: reached("interview_scheduled"), iDone: reached("interview_done"),
+    selected: reached("selected"), offered: reached("offered"), joined: reached("joined"), cs
+  };
+}
+const ratio = (a, b) => b > 0 ? (100 * a / b).toFixed(1) + "%" : "Not enough data";
+function reportText(jobs, m) {
+  const name = jobs.length === 1 ? `${jobs[0].code || ""} ${jobs[0].title || ""}`.trim() : "All requisitions";
+  return `[Organization name] recruitment status: ${name}
+Date: ${new Date().toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"})}
+
+Candidates sourced: ${m.sourced}
+Resumes screened: ${m.screened}
+Shortlisted: ${m.shortlisted}
+Rejected: ${m.rejected}
+Pending (screened / on hold): ${m.pending}
+Interviews scheduled: ${m.iSched}
+Interviews completed: ${m.iDone}
+Selected: ${m.selected}
+Offers made: ${m.offered}
+Joined: ${m.joined}
+
+Conversion
+Screened / sourced: ${ratio(m.screened, m.sourced)}
+Shortlisted / screened: ${ratio(m.shortlisted, m.screened)}
+Interview / shortlisted: ${ratio(m.iSched, m.shortlisted)}
+Selected / interviewed: ${ratio(m.selected, m.iDone)}
+Joined / offered: ${ratio(m.joined, m.offered)}`;
+}
+
+/* ---------- views ---------- */
+const IC = {
+  grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
+  list:'<path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/>',
+  scan:'<path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+  help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  pin:'<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  award:'<circle cx="12" cy="9" r="6"/><path d="m8.5 14-1.5 7 5-3 5 3-1.5-7"/>',
+  rupee:'<path d="M7 4h10M7 9h10M8 4c6 0 6 9-1 9l8 7"/>',
+  home:'<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  rows:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+  colsI:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/>',
+  chevL:'<path d="m15 18-6-6 6-6"/>', chevR:'<path d="m9 18 6-6-6-6"/>',
+  copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  dots:'<circle cx="12" cy="5" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="12" cy="19" r="1.2"/>',
+  layers:'<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+};
+const ic = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ""}</svg>`;
+const SOURCES = [["linkedin","LinkedIn","in"],["naukri","Naukri","N"],["referral","Referral","R"],["website","Website","W"],["portal","Other job portal","P"],["other","Other","·"]];
+const srcEl = k => { const s = SOURCES.find(x => x[0] === k) || SOURCES[5]; return `<span class="src ${s[0]}"><i>${s[2]}</i>${s[1]}</span>`; };
+const initials = n => String(n || "?").replace(/\(.*?\)/g, "").trim().split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
+const avCls = n => "a" + (1 + [...String(n || "")].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 6);
+const av = n => `<span class="av ${avCls(n)}" aria-hidden="true">${esc(initials(n))}</span>`;
+const fdate = t => t ? new Date(t).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"2-digit"}) : "—";
+const scoreColor = b => ({strong:"var(--good)", good:"var(--info)", partial:"var(--warn)", low:"var(--bad)"}[b]);
+const stagePill = k => `<span class="stg ${esc(k || "screened")}">${esc(stageLabel(k || "screened"))}</span>`;
+const jobStatus = j => j.status === "hold" ? ["hold","On hold"] : j.status === "closed" ? ["closed","Closed"] : ["open","Active"];
+const STAGE_TABS = [["all","All"],["screened","Screened"],["shortlisted","Shortlisted"],["interview","Interviewing"],["selected","Selected"],["offered","Offer / Joined"],["on_hold","On hold"],["rejected","Rejected"]];
+const inStageTab = (c, t) => { const s = c.stage || "screened";
+  if (t === "all") return true; if (t === "interview") return s === "interview_scheduled" || s === "interview_done";
+  if (t === "offered") return s === "offered" || s === "joined"; if (t === "screened") return s === "screened" || s === "sourced"; return s === t; };
+
+function vDashboard() {
+  const jobs = S.dashAll ? S.jobs : (activeJob() ? [activeJob()] : []);
+  if (!S.jobs.length) return `<div class="jhead"><div><h1>Dashboard</h1><p class="muted">Pipeline status across your jobs.</p></div></div>` + emptyStart();
+  const m = metrics(jobs);
+  const steps = [["Sourced", m.sourced], ["Screened", m.screened], ["Shortlisted", m.shortlisted], ["Interview scheduled", m.iSched], ["Interview completed", m.iDone], ["Selected", m.selected], ["Offer made", m.offered], ["Joined", m.joined]];
+  const max = Math.max(1, ...steps.map(s => s[1]));
+  const bands = {strong:0, good:0, partial:0, low:0};
+  m.cs.forEach(c => bands[score(c, job(c.jobId)).band[0]]++);
+  const ratios = [["Screened / sourced", m.screened, m.sourced], ["Shortlisted / screened", m.shortlisted, m.screened], ["Interview / shortlisted", m.iSched, m.shortlisted], ["Selected / interviewed", m.selected, m.iDone], ["Joined / offered", m.joined, m.offered]];
+  const hold = m.cs.filter(c => c.stage === "on_hold").length;
+  return `
+  <div class="jhead"><div><h1>Dashboard</h1><div class="meta">${S.jobs.length} ${S.jobs.length === 1 ? "job" : "jobs"}<span class="dot"></span>${S.cands.length} candidates screened</div></div>
+    <div class="row"><select id="dashScope" aria-label="Report scope" style="width:auto"><option value="all" ${S.dashAll ? "selected" : ""}>All jobs</option><option value="one" ${!S.dashAll ? "selected" : ""}>Selected job only</option></select>
+    <button class="btn" data-a="copyReport">${ic("copy")}Copy status report</button></div></div>
+  <div class="strip big">
+    ${[["Sourced", m.sourced, "users"], ["Screened", m.screened, "scan"], ["Shortlisted", m.shortlisted, "list"], ["Interviews", m.iSched, "cal"], ["Selected", m.selected, "award"], ["Joined", m.joined, "home"]]
+      .map(t => `<div><span class="label">${ic(t[2])}${t[0]}</span><b>${t[1]}</b></div>`).join("")}
+  </div>
+  <div class="cols">
+    <section class="panel"><header><h2>Pipeline funnel</h2><span class="muted" style="font-size:.76rem">Counts every stage a candidate has reached</span></header>
+      <div class="funnel">${steps.map(s => `<div class="frow"><span>${s[0]}</span><div class="fbar"><span style="width:${s[1] ? 100 * s[1] / max : 0}%"></span></div><span class="r num">${s[1]}</span></div>`).join("")}
+      <div class="frow side2"><span>On hold</span><div class="fbar"><span style="width:${100 * hold / max}%"></span></div><span class="num">${hold}</span></div>
+      <div class="frow side2"><span>Rejected</span><div class="fbar"><span style="width:${100 * m.rejected / max}%"></span></div><span class="num">${m.rejected}</span></div></div>
+    </section>
+    <section class="panel"><header><h2>Conversion ratios</h2></header>
+      <div class="card tablewrap"><table><thead><tr><th>Step</th><th class="r">Count</th><th class="r">Ratio</th></tr></thead><tbody>
+      ${ratios.map(r => `<tr><td>${r[0]}</td><td class="r">${r[1]} / ${r[2]}</td><td class="r">${r[2] > 0 ? ratio(r[1], r[2]) : '<span class="muted">No data yet</span>'}</td></tr>`).join("")}
+      </tbody></table></div>
+      <h3>JD alignment of screened candidates</h3>
+      <div class="chips"><span class="band strong">Strong ${bands.strong}</span><span class="band good">Good ${bands.good}</span><span class="band partial">Partial ${bands.partial}</span><span class="band low">Low ${bands.low}</span></div>
+    </section>
+  </div>
+  <section class="card table-card"><div class="panel" style="border:0;padding-bottom:10px"><header><h2>Jobs</h2><button class="btn sm primary" data-a="goNewJob">${ic("plus")}New job</button></header></div>
+    <div class="tablewrap"><table><thead><tr><th>Job</th><th>Status</th><th>Location</th><th>Posted</th><th class="r">Applicants</th><th class="r">Matched</th><th class="r">Top score</th></tr></thead><tbody>
+    ${S.jobs.map(j => { const cs = candsFor(j.id); const sc = cs.map(c => score(c, j).total); const st = jobStatus(j);
+      return `<tr class="click" data-a="openJob" data-id="${j.id}"><td><b>${esc(j.title)}</b>${fictTag(j)}<br><small class="muted">${esc(j.code || "")}</small></td><td><span class="status ${st[0]}">${st[1]}</span></td><td>${esc(nm(j.location))}</td><td>${fdate(j.createdAt)}</td><td class="r">${cs.length}</td><td class="r">${sc.filter(x => x >= 70).length}</td><td class="r">${sc.length ? fmt(Math.max(...sc)) : "—"}</td></tr>`; }).join("")}
+    </tbody></table></div></section>`;
+}
+const emptyStart = () => `<div class="empty"><h2>No jobs yet</h2><p>Start by pasting a job description. Claude extracts the requirements, Boolean strings and screening questions.</p><button class="btn primary" data-a="goNewJob">${ic("plus")}New job</button></div>`;
+function busyBar(kind) {
+  if (!S.busy || S.busy.kind !== kind) return "";
+  return `<div class="busy" role="status"><span class="spin"></span><span style="flex:1">${esc(S.busy.msg)}</span><button class="btn sm" data-a="stop">Stop</button></div>`;
+}
+function errBar(kind) { return S.err && S.err.kind === kind ? `<div class="callout bad" role="alert">${esc(S.err.text)}</div>` : ""; }
+
+/* job page */
+function vJob() {
+  const j = S.newJob ? null : activeJob();
+  if (S.newJob || !j) return `<div class="jhead"><div><h1>New job</h1><p class="muted">Stage 1: paste the job description to create a requisition.</p></div></div>` + newJobForm();
+  const cs = candsFor(j.id); const matched = cs.filter(c => score(c, j).total >= 70).length; const st = jobStatus(j);
+  const tab = ["candidates","questions","sourcing","edit"].includes(S.view) ? S.view : "details";
+  const exp = (j.minYears != null || j.maxYears != null) ? `${j.minYears ?? "?"}${j.maxYears != null ? "–" + j.maxYears : "+"} yrs` : NM;
+  const notice = j.noticeMaxDays != null ? `≤ ${j.noticePreferredDays ?? j.noticeMaxDays}d (max ${j.noticeMaxDays}d)` : j.noticePreferredDays != null ? `≤ ${j.noticePreferredDays} days` : NM;
+  let body = tab === "candidates" ? tabCandidates(j, cs) : tab === "questions" ? tabQuestions(j) : tab === "sourcing" ? tabSourcing(j) : tab === "edit" ? editJobForm(j) : tabDetails(j);
+  return `
+  <div class="jhead"><div><h1>${esc(j.title || "Untitled role")}${fictTag(j)}</h1>
+    <div class="meta"><span class="status ${st[0]}">${st[1]}</span>${j.code ? `<span>${esc(j.code)}</span><span class="dot"></span>` : ""}${cs.length} applicants<span class="dot"></span>${matched} matched (70+)</div></div>
+    <div class="row"><a class="btn primary" href="#screen">${ic("scan")}Screen resume</a><a class="btn" href="#edit">${ic("edit")}Edit job</a></div></div>
+  <div class="strip">
+    <div><span class="label">${ic("cal")}Posted date</span><b>${fdate(j.createdAt)}</b></div>
+    <div><span class="label">${ic("home")}Work mode</span><b>${esc(nm(j.workMode))}</b></div>
+    <div><span class="label">${ic("pin")}Location</span><b>${esc(nm(j.location))}</b></div>
+    <div><span class="label">${ic("award")}Experience</span><b>${esc(exp)}</b></div>
+    <div><span class="label">${ic("rupee")}Budget</span><b>${esc(nm(j.budget))}</b></div>
+    <div><span class="label">${ic("clock")}Notice</span><b>${esc(notice)}</b></div>
+  </div>
+  <div class="tabsbar"><nav class="seg" aria-label="Job sections">
+    <a href="#jobs" ${tab === "details" ? 'aria-current="page"' : ""}>Details</a>
+    <a href="#candidates" ${tab === "candidates" ? 'aria-current="page"' : ""}>Candidates (${cs.length})</a>
+    <a href="#sourcing" ${tab === "sourcing" ? 'aria-current="page"' : ""}>Sourcing</a>
+    <a href="#questions" ${tab === "questions" ? 'aria-current="page"' : ""}>Screening questions</a>
+    <a href="#edit" ${tab === "edit" ? 'aria-current="page"' : ""}>${ic("edit")} Edit</a></nav>
+</div>
+  ${body}`;
+}
+function candToolbar() {
+  return `<div class="cardhead"><label class="search">${ic("search")}<input type="search" id="candSearch" placeholder="Search by name or skill…" value="${esc(S.q)}" aria-label="Search candidates"></label>
+    <div class="row"><select id="srcFilter" aria-label="Filter by source" style="width:auto"><option value="">All sources</option>${SOURCES.map(s => `<option value="${s[0]}" ${S.srcFilter === s[0] ? "selected" : ""}>${s[1]}</option>`).join("")}</select>
+    <select id="sortBy" aria-label="Sort" style="width:auto"><option value="score" ${S.sort === "score" ? "selected" : ""}>Highest score</option><option value="date" ${S.sort === "date" ? "selected" : ""}>Newest first</option><option value="name" ${S.sort === "name" ? "selected" : ""}>Name A–Z</option></select>
+    <span class="seg"><button data-a="layout" data-v="list" aria-pressed="${S.layout === "list"}" title="List view" aria-label="List view">${ic("rows")}</button><button data-a="layout" data-v="compare" aria-pressed="${S.layout === "compare"}" title="Score comparison" aria-label="Score comparison">${ic("colsI")}</button></span></div></div>`;
+}
+function tabCandidates(j, all) {
+  const q = S.q.trim().toLowerCase();
+  let cs = all.map(c => ({c, s: score(c, j)}));
+  const counts = Object.fromEntries(STAGE_TABS.map(t => [t[0], cs.filter(x => inStageTab(x.c, t[0])).length]));
+  cs = cs.filter(x => inStageTab(x.c, S.stageTab) && (!S.srcFilter || (x.c.source || "other") === S.srcFilter) &&
+    (!q || [x.c.name, x.c.designation, ...arr(x.c.skills)].join(" ").toLowerCase().includes(q)));
+  cs.sort(S.sort === "date" ? (a, b) => (b.c.createdAt || 0) - (a.c.createdAt || 0) : S.sort === "name" ? (a, b) => String(a.c.name).localeCompare(b.c.name) : (a, b) => b.s.total - a.s.total);
+  const PER = 10, pages = Math.max(1, Math.ceil(cs.length / PER)); S.page = clamp(S.page, 1, pages);
+  const shown = cs.slice((S.page - 1) * PER, S.page * PER);
+  const tabs = `<div class="under" role="tablist">${STAGE_TABS.map(t => `<button data-a="stageTab" data-v="${t[0]}" aria-pressed="${S.stageTab === t[0]}">${t[1]} (${counts[t[0]]})</button>`).join("")}</div>`;
+  if (!all.length) return `<section class="card">${tabs}<div class="empty" style="border:0">No candidates screened for this job yet.<a class="btn primary" href="#screen">${ic("scan")}Screen resume</a></div></section>`;
+  let table;
+  if (S.layout === "compare") {
+    table = `<table><thead><tr><th>#</th><th>Applicant</th><th class="r">Score</th><th>Alignment</th><th class="r">Mand. /40</th><th class="r">Exp. /25</th><th class="r">Proj. /15</th><th class="r">Pref. /10</th><th class="r">Edu. /5</th><th class="r">Role /5</th><th>Missing mandatory</th><th class="r">Rel. yrs</th><th class="r">Notice</th><th>Expected CTC</th><th>Next step</th></tr></thead><tbody>
+    ${shown.map(({c, s}, i) => `<tr class="click" data-a="openCand" data-id="${c.id}"><td class="muted num">#${String((S.page - 1) * PER + i + 1).padStart(2, "0")}</td>
+      <td><div class="pp">${av(c.name)}<div><b>${esc(c.name)}${fictTag(c)}</b><small>${esc(nm(c.designation))}</small></div></div></td>
+      <td class="r"><b>${fmt(s.total)}</b></td><td><span class="band ${s.band[0]}">${s.band[1]}</span></td>
+      ${s.parts.map(p => `<td class="r">${fmt(p.pts)}</td>`).join("")}
+      <td>${s.missing.length ? esc(s.missing.join(", ")) : '<span class="muted">None</span>'}</td>
+      <td class="r">${c.relevantYears ?? "—"}</td><td class="r">${c.noticeDays != null ? c.noticeDays + "d" : "—"}</td><td>${esc(nm(c.expectedCtc))}</td>
+      <td>${esc(c.decision || s.next)}${c.decision ? "" : ' <small class="muted">(suggested)</small>'}</td></tr>`).join("")}</tbody></table>`;
+  } else {
+    table = `<table><thead><tr><th>#No</th><th>Applicant name</th><th>Screened on</th><th>Match score</th><th>Current stage</th><th>Skills</th><th>Source</th><th aria-label="Open"></th></tr></thead><tbody>
+    ${shown.map(({c, s}, i) => { const tags = s.man.filter(x => x.level === "hands-on").map(x => x.skill).slice(0, 2);
+      return `<tr class="click" data-a="openCand" data-id="${c.id}"><td class="muted num">#${String((S.page - 1) * PER + i + 1).padStart(2, "0")}</td>
+      <td><div class="pp">${av(c.name)}<div><b>${esc(c.name)}${fictTag(c)}</b><small>${esc(nm(c.designation))}</small></div></div></td>
+      <td class="num">${fdate(c.createdAt)}</td>
+      <td><div class="mscore"><b>${Math.round(s.total)}%</b><span><i style="width:${s.total}%;background:${scoreColor(s.band[0])}"></i></span></div></td>
+      <td>${stagePill(c.stage)}</td>
+      <td><div class="tags">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join("") || '<span class="muted">—</span>'}</div></td>
+      <td>${srcEl(c.source)}</td><td class="r"><span class="rowgo" title="Open evaluation">${ic("chevR")}</span></td></tr>`; }).join("")}</tbody></table>`;
+  }
+  const pager = pages > 1 ? `<div class="pager"><button data-a="page" data-v="${S.page - 1}" ${S.page === 1 ? "disabled" : ""}>${ic("chevL")} Previous</button>
+    ${Array.from({length: pages}, (_, i) => `<button data-a="page" data-v="${i + 1}" ${S.page === i + 1 ? 'aria-current="true"' : ""}>${i + 1}</button>`).join("")}
+    <button data-a="page" data-v="${S.page + 1}" ${S.page === pages ? "disabled" : ""}>Next ${ic("chevR")}</button></div>` : "";
+  return `<section class="card table-card">${candToolbar()}${tabs}${cs.length ? `<div class="tablewrap">${table}</div>` : `<div class="empty" style="border:0">No candidates match these filters.</div>`}${pager}<div class="cardfoot">Match score is a preliminary JD alignment measure from resume evidence, not a prediction of performance or a hiring decision.</div></section>`;
+}
+function tabDetails(j) {
+  return `<div class="cols">
+  <section class="panel"><header><h2>Job overview</h2></header>
+    <dl class="kv">${[["Job title", j.title], ["Seniority", j.seniority], ["Experience", (j.minYears != null || j.maxYears != null) ? `${j.minYears ?? "?"}–${j.maxYears ?? "?"} years` : NM], ["Location", j.location], ["Work mode", j.workMode], ["Budget", j.budget],
+      ["Notice period", (j.noticePreferredDays != null || j.noticeMaxDays != null) ? `${j.noticePreferredDays != null ? "≤ " + j.noticePreferredDays + " days preferred" : ""}${j.noticePreferredDays != null && j.noticeMaxDays != null ? "; " : ""}${j.noticeMaxDays != null ? j.noticeMaxDays + " days maximum" : ""}` : NM],
+      ["Education", j.education], ["Domain", `${nm(j.domain)}${j.domainRequired && j.domainRequired !== "none" ? " (" + j.domainRequired + ")" : ""}`], ["Candidates sourced", j.sourcedCount || 0]]
+      .map(r => `<dt>${r[0]}</dt><dd>${esc(nm(r[1]))}</dd>`).join("")}</dl>
+  </section>
+  <section class="panel"><header><h2>Skills</h2><a class="btn sm" href="#edit">${ic("edit")}Edit</a></header>
+    <div class="field"><span class="cap">Mandatory · 40% of score</span>${chips(j.mandatory, "must")}</div>
+    <div class="field"><span class="cap">Preferred · 10% of score</span>${chips(j.preferred)}</div>
+    <div class="field"><span class="cap">Technical keywords</span>${chips(j.keywords)}</div>
+    ${arr(j.clarifications).length ? `<div class="callout"><b>Ask the hiring manager</b>${ul(j.clarifications)}</div>` : ""}
+    ${arr(j.assumptions).length ? `<div class="callout info"><b>Assumptions made</b>${ul(j.assumptions)}</div>` : ""}
+  </section></div>`;
+}
+function tabSourcing(j) {
+  return `<section class="panel"><header><h2>Boolean search strings</h2><span class="muted" style="font-size:.78rem">Run these in your own LinkedIn or Naukri account. No portal has been searched from here.</span></header>
+    ${(j.booleans || []).map((b, i) => `<div class="bool"><div class="row" style="justify-content:space-between"><b>${esc(b.label)}</b><button class="btn sm" data-a="copyBool" data-i="${i}">${ic("copy")}Copy</button></div><pre>${hlBool(b.query)}</pre>${b.why ? `<p class="muted" style="font-size:.8rem">${esc(b.why)}</p>` : ""}</div>`).join("") || `<p class="muted">No Boolean strings yet. Create the job from a JD with Claude to generate them.</p>`}
+  </section>
+  <div class="cols">
+    <section class="panel"><h3>Job titles</h3>${chips(j.titles)}<h3>Alternative titles</h3>${chips(j.altTitles)}</section>
+    <section class="panel"><h3>Technology combinations</h3>${chips(j.combos)}<h3>Keywords</h3>${chips(j.keywords)}</section>
+  </div>
+  ${arr(j.strategy).length ? `<section class="panel"><h2>Sourcing strategy</h2>${ul(j.strategy)}</section>` : ""}`;
+}
+function tabQuestions(j) {
+  const qs = j.questions || [];
+  return `<section class="card table-card"><div class="panel" style="border:0;padding-bottom:10px"><header><h2>Screening questions</h2>${qs.length ? `<button class="btn sm" data-a="copyQs">${ic("copy")}Copy all</button>` : ""}</header></div>
+    ${qs.length ? `<div class="tablewrap"><table><thead><tr><th>#</th><th>Question</th><th>Good answer indicators</th><th>Follow-up</th></tr></thead><tbody>
+      ${qs.map((q, i) => `<tr><td class="num muted">${i + 1}</td><td>${esc(q.q)}</td><td>${esc(q.indicator)}</td><td>${esc(q.followUp)}</td></tr>`).join("")}</tbody></table></div>` : `<div class="empty" style="border:0">No questions yet. Create the job from a JD with Claude to generate them.</div>`}
+  </section>`;
+}
+function newJobForm() {
+  return `<section class="panel">
+    <div class="grid2"><div class="field"><label class="label" for="nj_code">Job code</label><input type="text" id="nj_code" placeholder="e.g. JAVA-014" value="${esc(d("nj_code"))}"></div>
+    <div class="field"><label class="label" for="nj_sourced">Candidates sourced so far</label><input type="number" min="0" id="nj_sourced" value="${esc(d("nj_sourced"))}" placeholder="0"></div></div>
+    <div class="field"><label class="label" for="nj_jd">Job description</label>
+    <textarea id="nj_jd" rows="14" placeholder="Paste the full JD: role, experience, must-have and good-to-have skills, location, work mode, budget, notice period…">${esc(d("nj_jd"))}</textarea></div>
+    ${busyBar("jd")}${errBar("jd")}
+    <div class="row"><button class="btn primary" data-a="analyseJD" ${S.busy ? "disabled" : ""}>Analyse JD with Claude</button>
+    <button class="btn" data-a="manualJob" ${S.busy ? "disabled" : ""}>Enter requirements manually</button>
+    ${S.jobs.length ? `<button class="btn ghost" data-a="cancelNew">Cancel</button>` : ""}</div>
+    <p class="muted" style="font-size:.78rem">Analysis usually takes 20–60 seconds. Review the extracted requirements before screening against them.</p></section>`;
+}
+const LISTF = ["mandatory","preferred","keywords","titles","altTitles","combos"];
+const LINEF = ["strategy","clarifications","assumptions"];
+function edFor(j) { if (S.ed && S.ed.id === j.id) return S.ed; return S.ed = makeEd(j); }
+function makeEd(j) {
+  const e = clone(j);
+  LISTF.forEach(k => e[k] = arr(j[k]).join(", "));
+  LINEF.forEach(k => e[k] = arr(j[k]).join("\n"));
+  e.booleans = (j.booleans || []).map(b => ({label: b.label || "", query: b.query || "", why: b.why || ""}));
+  e.questions = (j.questions || []).map(q => ({q: q.q || "", indicator: q.indicator || "", followUp: q.followUp || ""}));
+  ["title","code","seniority","location","workMode","budget","education","domain"].forEach(k => { if (e[k] === NM || e[k] == null) e[k] = ""; });
+  return e;
+}
+const edDirty = j => !!S.ed && S.ed.id === j.id && JSON.stringify(S.ed) !== JSON.stringify(makeEd(j));
+function updateSavebar() {
+  const j = activeJob(); const sb = $(".savebar"); if (!j || !sb) return; const dirty = edDirty(j);
+  sb.querySelector("[data-sb]").textContent = dirty ? "You have unsaved changes" : "No changes yet";
+  sb.querySelectorAll("[data-a=saveEdit],[data-a=cancelEdit]").forEach(b => b.disabled = !dirty);
+}
+function editJobForm(j) {
+  const e = edFor(j);
+  const f = (k, label, type = "text", ph = "") => `<div class="field"><label class="label" for="ed_${k}">${label}</label><input type="${type}" id="ed_${k}" data-ed="${k}" value="${esc(e[k] ?? "")}" placeholder="${esc(ph)}"></div>`;
+  const ta = (k, label, rows, hint) => `<div class="field"><label class="label" for="ed_${k}">${label}${hint ? ` <span class="muted">· ${hint}</span>` : ""}</label><textarea id="ed_${k}" data-ed="${k}" rows="${rows}">${esc(e[k] ?? "")}</textarea></div>`;
+  const dirty = edDirty(j);
+  return `
+  <section class="panel"><header><h2>Job details</h2></header>
+    <div class="grid2">${f("title", "Job title")}${f("code", "Job code")}${f("seniority", "Seniority")}
+    ${f("minYears", "Min. experience (years)", "number")}${f("maxYears", "Max. experience (years)", "number")}${f("location", "Location")}
+    ${f("workMode", "Work mode", "text", "e.g. Hybrid, 3 days in office")}${f("budget", "Budget", "text", "e.g. ₹12–18 LPA")}${f("education", "Education")}
+    ${f("noticePreferredDays", "Preferred notice (days)", "number")}${f("noticeMaxDays", "Max. notice (days)", "number")}${f("domain", "Domain / industry")}
+    <div class="field"><label class="label" for="ed_domainRequired">Domain experience is</label><select id="ed_domainRequired" data-ed="domainRequired">${[["none","Not required"],["preferred","Preferred"],["mandatory","Mandatory"]].map(o => `<option value="${o[0]}" ${e.domainRequired === o[0] ? "selected" : ""}>${o[1]}</option>`).join("")}</select></div>
+    ${f("sourcedCount", "Candidates sourced", "number")}
+    <div class="field"><label class="label" for="ed_status">Status</label><select id="ed_status" data-ed="status">${[["open","Active"],["hold","On hold"],["closed","Closed"]].map(o => `<option value="${o[0]}" ${(e.status || "open") === o[0] ? "selected" : ""}>${o[1]}</option>`).join("")}</select></div></div>
+  </section>
+  <section class="panel"><header><h2>Skills and keywords</h2><span class="muted" style="font-size:.76rem">Separate with commas. Changing skills re-scores every candidate for this job.</span></header>
+    ${ta("mandatory", "Mandatory skills (40% of score)", 2)}${ta("preferred", "Preferred skills (10% of score)", 2)}${ta("keywords", "Technical keywords", 2)}
+  </section>
+  <section class="panel"><header><h2>Boolean search strings</h2><button class="btn sm" data-a="addBool">${ic("plus")}Add string</button></header>
+    ${e.booleans.map((b, i) => `<div class="bool">
+      <div class="row" style="justify-content:space-between"><input type="text" id="ed_b${i}_label" data-edl="booleans" data-i="${i}" data-k="label" value="${esc(b.label)}" placeholder="Label, e.g. Primary" style="flex:1;max-width:360px" aria-label="String label">
+      <button class="btn sm danger" data-a="delRow" data-l="booleans" data-i="${i}">Remove</button></div>
+      <textarea id="ed_b${i}_query" data-edl="booleans" data-i="${i}" data-k="query" rows="3" class="mono" aria-label="Boolean string">${esc(b.query)}</textarea>
+      <input type="text" id="ed_b${i}_why" data-edl="booleans" data-i="${i}" data-k="why" value="${esc(b.why)}" placeholder="Why this string is useful" aria-label="Why this string">
+    </div>`).join("") || `<p class="muted">No search strings yet.</p>`}
+  </section>
+  <section class="panel"><header><h2>Sourcing</h2></header>
+    <div class="grid2">${ta("titles", "Job titles", 2)}${ta("altTitles", "Alternative titles", 2)}</div>
+    ${ta("combos", "Technology combinations", 2)}${ta("strategy", "Sourcing strategy", 4, "one step per line")}
+  </section>
+  <section class="panel"><header><h2>Screening questions</h2><button class="btn sm" data-a="addQ">${ic("plus")}Add question</button></header>
+    ${e.questions.map((q, i) => `<div class="bool">
+      <div class="row" style="justify-content:space-between"><span class="cap">Question ${i + 1}</span><div class="row">
+        <button class="btn sm" data-a="moveQ" data-i="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="Move up">↑</button>
+        <button class="btn sm" data-a="moveQ" data-i="${i}" data-d="1" ${i === e.questions.length - 1 ? "disabled" : ""} aria-label="Move down">↓</button>
+        <button class="btn sm danger" data-a="delRow" data-l="questions" data-i="${i}">Remove</button></div></div>
+      <textarea id="ed_q${i}_q" data-edl="questions" data-i="${i}" data-k="q" rows="2" placeholder="Question" aria-label="Question">${esc(q.q)}</textarea>
+      <div class="grid2"><input type="text" id="ed_q${i}_ind" data-edl="questions" data-i="${i}" data-k="indicator" value="${esc(q.indicator)}" placeholder="Good answer indicators" aria-label="Good answer indicators">
+      <input type="text" id="ed_q${i}_fu" data-edl="questions" data-i="${i}" data-k="followUp" value="${esc(q.followUp)}" placeholder="Follow-up question" aria-label="Follow-up"></div>
+    </div>`).join("") || `<p class="muted">No questions yet.</p>`}
+  </section>
+  <section class="panel"><header><h2>Notes for the hiring manager</h2></header>
+    <div class="grid2">${ta("clarifications", "Questions to ask", 4, "one per line")}${ta("assumptions", "Assumptions made", 4, "one per line")}</div>
+  </section>
+  <div class="savebar"><span class="muted" data-sb>${dirty ? "You have unsaved changes" : "No changes yet"}</span><span style="flex:1"></span>
+    <button class="btn danger" data-a="delJob">${S.confirm === "job" + j.id ? "Confirm: delete job and its candidates" : "Delete job"}</button>
+    <button class="btn" data-a="cancelEdit" ${dirty ? "" : "disabled"}>Discard changes</button>
+    <button class="btn primary" data-a="saveEdit" ${dirty ? "" : "disabled"}>Save changes</button></div>`;
+}
+
+function vScreen() {
+  const j = activeJob();
+  if (!j) return `<div class="jhead"><div><h1>Screen resume</h1></div></div>` + emptyStart();
+  const last = S.lastScreen && S.cands.find(c => c.id === S.lastScreen);
+  return `<div class="jhead"><div><h1>Screen resume</h1><div class="meta">Against <b style="color:var(--ink)">${esc(j.title)}</b>${j.code ? `<span class="mono">${esc(j.code)}</span>` : ""}<span class="dot"></span>change the job in the top bar</div></div></div>
+  <div class="cols">
+    <section class="panel"><header><h2>Resume</h2><label class="btn sm" for="resFile">Upload .pdf / .docx / .txt</label><input type="file" id="resFile" accept=".pdf,.docx,.txt,.md,text/plain" hidden></header>
+      <div class="field"><label class="label" for="resText">Resume text</label><textarea id="resText" rows="15" placeholder="Paste the resume text, or upload a file.">${esc(d("resText"))}</textarea></div>
+      <div class="field"><label class="label" for="resSource">Source</label><select id="resSource">${SOURCES.map(s => `<option value="${s[0]}" ${(S.draft.resSource || "linkedin") === s[0] ? "selected" : ""}>${s[1]}</option>`).join("")}</select></div>
+      ${busyBar("resume")}${errBar("resume")}
+      <div class="row"><button class="btn primary" data-a="screen" ${S.busy ? "disabled" : ""}>Screen against JD</button><button class="btn" data-a="manualCand" ${S.busy ? "disabled" : ""}>Add candidate manually</button></div>
+      <p class="muted" style="font-size:.78rem">Only the extracted screening profile is saved, not the resume itself. Age, gender, photos and other personal details are ignored and never used in scoring.</p>
+    </section>
+    <section class="panel"><header><h2>Requirements being matched</h2><a class="btn sm ghost" href="#jobs">View job</a></header>
+      <div class="field"><span class="cap">Mandatory · 40%</span>${chips(j.mandatory, "must")}</div>
+      <div class="field"><span class="cap">Preferred · 10%</span>${chips(j.preferred)}</div>
+      <dl class="kv"><dt>Experience · 25%</dt><dd>${j.minYears != null ? j.minYears + "+ relevant years" : NM}</dd>
+      <dt>Project / domain · 15%</dt><dd>${esc(nm(j.domain))}${j.domainRequired && j.domainRequired !== "none" ? " (" + esc(j.domainRequired) + ")" : ""}</dd>
+      <dt>Education · 5%</dt><dd>${esc(nm(j.education))}</dd><dt>Role / location · 5%</dt><dd>${esc(nm(j.location))}; notice ${j.noticeMaxDays != null ? "max " + j.noticeMaxDays + " days" : NM}</dd></dl>
+      ${last ? `<div class="callout info">Last screened: <b>${esc(last.name)}</b>, ${fmt(score(last, j).total)}. <button class="btn sm" data-a="openCand" data-id="${last.id}">Open evaluation</button></div>` : ""}
+    </section>
+  </div>`;
+}
+
+function vHelp() {
+  return `<div class="jhead"><div><h1>Help</h1><p class="muted">How the IT Recruitment Assistant works, in plain words.</p></div></div>
+  <div class="cols">
+    <section class="panel"><h2>Daily routine</h2><ol class="steps">
+      <li><b>New JD arrives:</b> Jobs → New job, paste it, click Analyse. Check the must-have skills look right.</li>
+      <li><b>Sourcing:</b> open the job's Sourcing tab, copy a search string, run it in your LinkedIn or Naukri account.</li>
+      <li><b>Screening:</b> upload each good resume on Screen resume. It's scored and added to Candidates.</li>
+      <li><b>After every call:</b> open the candidate, add notes and move their stage. The dashboard counts come from this.</li>
+      <li><b>Contacting people:</b> Messages has ready drafts. Copy and send from your own email.</li>
+      <li><b>Reporting:</b> Dashboard → Copy status report.</li></ol>
+      <div class="field"><label class="label" for="recName">Your name (used in email signatures)</label><input type="text" id="recName" value="${esc(S.recruiter)}" placeholder="e.g. Chirag Patekar"></div>
+    </section>
+    <section class="panel"><h2>How the match score works</h2>
+      <p>Claude reads the resume and grades each job skill: <span class="lv hands-on">Hands-on</span> used in a project, <span class="lv listed">Listed only</span> in a skills list without proof, <span class="lv related">Related tech</span> similar but not the same, or <span class="lv none">Not evidenced</span>. The app then calculates the score with fixed weights:</p>
+      <div class="wt">${[["Mandatory skills", 40], ["Relevant experience", 25], ["Projects / domain", 15], ["Preferred skills", 10], ["Education", 5], ["Location / notice", 5]].map(w => `<div><span class="label">${w[0]}</span><b>${w[1]}</b></div>`).join("")}</div>
+      <p class="muted">85+ strong, 70–84 good, 55–69 partial, below 55 low. You can correct any grade in the candidate panel and the score updates. The score is a guide, and the final decision is always yours.</p>
+    </section>
+  </div>`;
+}
+
+/* messages */
+const MSG_TYPES = [["outreach","Initial outreach"],["intro","Job opportunity introduction"],["resume","Resume request"],["screening","Screening call invitation"],["schedule","Interview scheduling"],["confirm","Interview confirmation"],["feedback","Interview feedback"],["followup","Follow-up"],["offer","Offer communication"],["rejection","Rejection"]];
+function draftMsg(type, c, j) {
+  const first = c ? String(c.name || "").split(/\s+/)[0] || "[Candidate name]" : "[Candidate name]";
+  const role = j ? j.title || "[Role]" : "[Role]";
+  const loc = j && j.location && j.location !== NM ? j.location : "[Location]";
+  const mode = j && j.workMode && j.workMode !== NM ? j.workMode : "[Work mode]";
+  const rec = S.recruiter || "[Your name]";
+  const sig = `Best regards,\n${rec}\n[Organization name] | [Phone]`;
+  const skills = c ? align(c.mandatory, arr(j && j.mandatory)).filter(s => s.level === "hands-on").slice(0, 3).map(s => s.skill).join(", ") : "";
+  const top = skills || arr(j && j.mandatory).slice(0, 3).join(", ") || "[key skills]";
+  const req = j ? arr(j.mandatory).slice(0, 6).map(s => `• ${s}`).join("\n") : "• [Key requirement]";
+  const T = {
+    outreach: [`${role} opportunity – ${loc}`, `Hi ${first},\n\nI'm ${rec} from [Organization name]. I came across your profile, and your experience with ${top} looks relevant to a ${role} role we are hiring for with one of our clients (${loc}, ${mode}).\n\nWould you be open to a short conversation about it? If so, please share a convenient time.\n\n${sig}`],
+    intro: [`${role} – role overview`, `Hi ${first},\n\nThank you for your interest. Here is a short overview of the role:\n\nRole: ${role}\nLocation: ${loc} (${mode})\nExperience: ${j && j.minYears != null ? j.minYears + (j.maxYears != null ? "–" + j.maxYears : "+") + " years" : "[Experience]"}\n\nKey skills:\n${req}\n\nIf this matches what you are looking for, I'd be glad to take it forward. Compensation and other terms will be discussed and confirmed during the process.\n\n${sig}`],
+    resume: [`Updated resume – ${role}`, `Hi ${first},\n\nThank you for your time. To take your profile forward for the ${role} role, could you please share:\n\n• Your updated resume\n• Current location and openness to ${mode} work in ${loc}\n• Notice period\n• Current and expected CTC\n\n${sig}`],
+    screening: [`${role} – screening call`, `Hi ${first},\n\nI'd like to schedule a 20-minute screening call to discuss the ${role} role and your experience.\n\nCould you share two or three slots that suit you over the next two working days?\n\n${sig}`],
+    schedule: [`Interview scheduling – ${role}`, `Hi ${first},\n\nThank you for the screening conversation. The next step is a technical interview for the ${role} role.\n\nPlease let me know which of these slots works for you:\n• [Date] at [Time]\n• [Date] at [Time]\n• [Date] at [Time]\n\nThe interview will be [video call / in person] and will last about [duration].\n\n${sig}`],
+    confirm: [`Interview confirmed – ${role}`, `Hi ${first},\n\nThis confirms your interview for the ${role} role:\n\nDate: [Date]\nTime: [Time] IST\nMode: [Video link / Office address]\nPanel: [Interviewer name(s)]\nDuration: [Duration]\n\nPlease keep a copy of your resume handy and join a few minutes early. Let me know if anything changes.\n\n${sig}`],
+    feedback: [`Interview update – ${role}`, `Hi ${first},\n\nThank you for attending the interview for the ${role} role. The panel has shared their feedback:\n\n[Summary of feedback]\n\nNext step: [Next step / timeline].\n\nPlease feel free to reach out if you have any questions.\n\n${sig}`],
+    followup: [`Following up – ${role}`, `Hi ${first},\n\nI'm following up on my earlier message about the ${role} role in ${loc}. Please let me know if you'd like to explore it, or if now isn't the right time. Either way, I'd appreciate a quick reply.\n\n${sig}`],
+    offer: [`Offer – ${role}`, `Hi ${first},\n\nI'm pleased to let you know that the client would like to extend an offer for the ${role} role.\n\nThe formal offer letter, with confirmed compensation, joining date and terms, will be shared by [client / HR] on [date]. Please review it carefully and let me know if you have any questions.\n\nCongratulations, and thank you for your time throughout the process.\n\n${sig}`],
+    rejection: [`Update on your application – ${role}`, `Hi ${first},\n\nThank you for your time and interest in the ${role} role. After careful consideration, we won't be moving forward with your application for this position.\n\nWe appreciate the effort you put into the process and would like to keep your profile in mind for future roles that match your experience.\n\nWishing you the very best.\n\n${sig}`],
+  };
+  const t = T[type] || T.outreach;
+  return `Subject: ${t[0]}\n\n${t[1]}`;
+}
+function vMessages() {
+  const j = activeJob();
+  const cs = j ? candsFor(j.id) : [];
+  const c = cs.find(x => x.id === S.msgCand) || null;
+  const text = S.msgText ?? draftMsg(S.msgType, c, j);
+  return `<div class="jhead"><div><h1>Messages</h1><p class="muted">Stage 7: candidate communication drafts. Nothing is sent from here. Copy the draft into your email or messaging tool.</p></div></div>
+  <div class="msgcols">
+    <section class="panel">
+      <div class="field"><label class="label" for="msgType">Message type</label><select id="msgType">${MSG_TYPES.map(t => `<option value="${t[0]}" ${S.msgType === t[0] ? "selected" : ""}>${t[1]}</option>`).join("")}</select></div>
+      <div class="field"><label class="label" for="msgCand">Candidate (${esc(j ? j.title : "no job")})</label><select id="msgCand"><option value="">No candidate (placeholders)</option>${cs.map(x => `<option value="${x.id}" ${S.msgCand === x.id ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></div>
+      <div class="field"><label class="label" for="recName">Your name (signature)</label><input type="text" id="recName" value="${esc(S.recruiter)}" placeholder="e.g. Chirag Patekar"></div>
+      <p class="muted" style="font-size:.78rem">Fill the [bracketed] placeholders before sending. Drafts never promise salary, selection or terms that aren't confirmed.</p>
+    </section>
+    <section class="panel"><header><h2>${esc(MSG_TYPES.find(t => t[0] === S.msgType)[1])}</h2>
+      <div class="row"><button class="btn sm" data-a="resetMsg">Reset</button><button class="btn sm" data-a="polish" ${S.busy ? "disabled" : ""}>Tighten with Claude</button><button class="btn sm primary" data-a="copyMsg">${ic("copy")}Copy</button></div></header>
+      ${busyBar("polish")}${errBar("polish")}
+      <textarea id="msgBody" class="msgbox" rows="18" aria-label="Message draft">${esc(text)}</textarea>
+    </section>
+  </div>`;
+}
+
+/* candidate drawer */
+function drawer() {
+  const c = S.cands.find(x => x.id === S.open);
+  if (!c) return "";
+  const j = job(c.jobId) || {};
+  const s = score(c, j);
+  const lvSel = (grp, sk, cur) => `<select data-lv="${grp}" data-skill="${esc(sk)}" aria-label="Evidence level for ${esc(sk)}" style="width:auto;padding:4px 8px">${LEVELS.map(l => `<option value="${l.k}" ${cur === l.k ? "selected" : ""}>${l.l}</option>`).join("")}</select>`;
+  const skillRows = list => list.map(x => `<tr><td>${esc(x.skill)}</td><td><span class="lv ${esc(x.level)}">${esc((LEVELS.find(l => l.k === x.level) || {}).l || x.level)}</span></td><td>${esc(x.evidence || NM)}</td><td>${lvSel(x._g, x.skill, x.level)}</td></tr>`).join("");
+  const man = s.man.map(x => ({...x, _g: "mandatory"})), pre = s.pre.map(x => ({...x, _g: "preferred"}));
+  return `<div class="scrim" data-a="closeCand"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Candidate evaluation">
+    <div class="row" style="justify-content:space-between"><span class="cap">Stage 6 · Candidate evaluation${c.fictional ? " · fictional demo" : ""}</span><button class="btn sm" data-a="closeCand">Close</button></div>
+    <div class="dhead">
+      <div class="score-ring" style="--p:${s.total};--ring:${scoreColor(s.band[0])}"><div>${fmt(s.total)}</div></div>
+      <div class="whod"><div class="row">${av(c.name)}<h2>${esc(c.name)}${fictTag(c)}</h2></div><span class="muted">${esc(nm(c.designation))} · ${esc(j.title || "")}</span><div class="row"><span class="band ${s.band[0]}">${s.band[1]}</span>${stagePill(c.stage)}${srcEl(c.source)}</div></div>
+    </div>
+    <section class="panel">
+      <div class="grid2">
+        <div class="field"><label class="label" for="c_stage">Current stage</label><select id="c_stage">${ALLSTAGES.map(x => `<option value="${x.k}" ${(c.stage || "screened") === x.k ? "selected" : ""}>${x.l}</option>`).join("")}</select></div>
+        <div class="field"><label class="label" for="c_dec">Recruiter's next step</label><select id="c_dec"><option value="">Not decided (suggested: ${esc(s.next)})</option>${NEXT.map(n => `<option ${c.decision === n ? "selected" : ""}>${n}</option>`).join("")}</select></div>
+        <div class="field"><label class="label" for="c_name">Candidate name</label><input type="text" id="c_name" value="${esc(c.name)}"></div>
+        <div class="field"><label class="label" for="c_desig">Current designation</label><input type="text" id="c_desig" value="${esc(c.designation === NM ? "" : c.designation)}" placeholder="${NM}"></div>
+        <div class="field"><label class="label" for="c_locText">Current location</label><input type="text" id="c_locText" value="${esc(c.location === NM ? "" : (c.location || ""))}" placeholder="${NM}"></div>
+        <div class="field"><label class="label" for="c_ectc">Expected CTC</label><input type="text" id="c_ectc" value="${esc(c.expectedCtc === NM ? "" : (c.expectedCtc || ""))}" placeholder="${NM}"></div>
+        <div class="field"><label class="label" for="c_source">Source</label><select id="c_source">${SOURCES.map(x => `<option value="${x[0]}" ${(c.source || "other") === x[0] ? "selected" : ""}>${x[1]}</option>`).join("")}</select></div>
+      </div>
+      <p class="muted" style="font-size:.8rem"><b>Why suggested:</b> ${esc(s.why)} The final decision is yours.</p>
+    </section>
+    <section class="panel"><header><h2>Evaluation report</h2><button class="btn sm" data-a="copyEval">${ic("copy")}Copy report</button></header>
+      <dl class="kv">
+        <dt>Total experience</dt><dd>${c.totalYears != null ? c.totalYears + " years" : NM}</dd>
+        <dt>Relevant experience</dt><dd>${c.relevantYears != null ? c.relevantYears + " years" : NM}${c.relevantBasis ? `<br><small class="muted">${esc(c.relevantBasis)}</small>` : ""}</dd>
+        <dt>Technical skills</dt><dd>${chips(c.skills)}</dd>
+        <dt>Projects</dt><dd>${ul(c.projects)}</dd>
+        <dt>Domain</dt><dd>${esc(nm(c.domainExperience))}</dd>
+        <dt>Education</dt><dd>${esc(nm(c.education))}${arr(c.certifications).length ? "<br>" + esc(arr(c.certifications).join(", ")) : ""}</dd>
+        <dt>Strong matching areas</dt><dd>${s.man.filter(x => x.level === "hands-on").map(x => esc(x.skill)).join(", ") || "None evidenced"}</dd>
+        <dt>Missing mandatory skills</dt><dd>${s.missing.length ? `<span style="color:var(--bad)">${esc(s.missing.join(", "))}</span>` : "None"}</dd>
+        <dt>Notice period</dt><dd>${c.noticeDays != null ? c.noticeDays + " days" : NM}${c.noticeText && c.noticeText !== NM ? ` <small class="muted">(${esc(c.noticeText)})</small>` : ""}</dd>
+        <dt>Compensation</dt><dd>Current: ${esc(nm(c.currentCtc))} · Expected: ${esc(nm(c.expectedCtc))}</dd>
+        <dt>Location</dt><dd>${esc(nm(c.location))} <small class="muted">(${esc(c.locationFit || "unknown")})</small></dd>
+        <dt>Achievements</dt><dd>${ul(c.achievements)}</dd>
+      </dl>
+    </section>
+    <section class="panel"><header><h2>Score breakdown</h2><span class="muted" style="font-size:.78rem">Change an evidence level below to recalculate</span></header>
+      <div class="card tablewrap"><table><thead><tr><th>Parameter</th><th class="r">Weight</th><th class="r">Points</th><th>How it was calculated</th></tr></thead><tbody>
+      ${s.parts.map(p => `<tr><td>${p.label}</td><td class="r">${p.w}</td><td class="r"><b>${fmt(p.pts)}</b></td><td>${esc(p.how)}</td></tr>`).join("")}
+      <tr><td><b>Total</b></td><td class="r">100</td><td class="r"><b>${fmt(s.total)}</b></td><td>${s.band[1]}. Bands: 85+ strong, 70–84 good, 55–69 partial, below 55 low.</td></tr></tbody></table></div>
+      ${s.flags.length ? `<div class="callout">Not stated on the resume, scored as half or zero: ${esc(s.flags.join("; "))}.</div>` : ""}
+      <div class="grid2">
+        <div class="field"><label class="label" for="c_rel">Relevant years</label><input type="number" step="0.5" min="0" id="c_rel" value="${esc(c.relevantYears ?? "")}"></div>
+        <div class="field"><label class="label" for="c_proj">Project relevance (0–10)</label><input type="number" min="0" max="10" id="c_proj" value="${esc(c.projectRelevance ?? 0)}"></div>
+        <div class="field"><label class="label" for="c_notice">Notice (days)</label><input type="number" min="0" id="c_notice" value="${esc(c.noticeDays ?? "")}"></div>
+        <div class="field"><label class="label" for="c_dom">Domain match</label><select id="c_dom">${["yes","no","unknown"].map(o => `<option ${c.domainMatch === o ? "selected" : ""}>${o}</option>`).join("")}</select></div>
+        <div class="field"><label class="label" for="c_edu">Education</label><select id="c_edu">${["meets","partial","does-not-meet","unknown"].map(o => `<option ${c.educationMatch === o ? "selected" : ""}>${o}</option>`).join("")}</select></div>
+        <div class="field"><label class="label" for="c_loc">Location fit</label><select id="c_loc">${["fits","relocation","mismatch","unknown"].map(o => `<option ${c.locationFit === o ? "selected" : ""}>${o}</option>`).join("")}</select></div>
+      </div>
+      ${c.projectReason ? `<p class="muted" style="font-size:.8rem"><b>Project relevance:</b> ${esc(c.projectReason)}</p>` : ""}
+    </section>
+    <section class="panel"><header><h2>Skill matching</h2></header>
+      <div class="card tablewrap"><table><thead><tr><th>Mandatory skill</th><th>Evidence</th><th>From the resume</th><th>Adjust</th></tr></thead><tbody>${skillRows(man) || `<tr><td colspan="4" class="muted">No mandatory skills on the job.</td></tr>`}</tbody></table></div>
+      ${pre.length ? `<div class="card tablewrap"><table><thead><tr><th>Preferred skill</th><th>Evidence</th><th>From the resume</th><th>Adjust</th></tr></thead><tbody>${skillRows(pre)}</tbody></table></div>` : ""}
+    </section>
+    <section class="panel"><header><h2>Concerns and verification</h2></header>
+      <div class="cols"><div class="field"><span class="cap">Technical concerns</span>${ul(c.concerns)}</div><div class="field"><span class="cap">Verify with candidate</span>${ul(c.verify)}</div></div>
+    </section>
+    ${(c.questions || []).length ? `<section class="panel"><header><h2>Screening questions</h2><button class="btn sm" data-a="copyCandQs">${ic("copy")}Copy</button></header>
+      <div class="card tablewrap"><table><thead><tr><th>#</th><th>Question</th><th>Good answer indicators</th><th>Follow-up</th></tr></thead><tbody>
+      ${c.questions.map((q, i) => `<tr><td class="num">${i + 1}</td><td>${esc(q.q)}</td><td>${esc(q.indicator)}</td><td>${esc(q.followUp)}</td></tr>`).join("")}</tbody></table></div></section>` : ""}
+    <section class="panel"><header><h2>Recruiter screening notes</h2></header>
+      <textarea id="c_notes" rows="5" placeholder="Notes from your screening call…">${esc(S.draft["c_notes_" + c.id] ?? c.notes ?? "")}</textarea>
+      <div class="row"><button class="btn primary" data-a="saveNotes">Save notes</button><button class="btn" data-a="msgCand">${ic("mail")}Draft a message</button><span style="flex:1"></span>
+      <button class="btn danger" data-a="delCand">${S.confirm === "cand" + c.id ? "Confirm delete" : "Delete candidate"}</button></div>
+    </section>
+  </aside>`;
+}
+function evalText(c) {
+  const j = job(c.jobId) || {}; const s = score(c, j);
+  return `Candidate Name: ${c.name}
+Job Title: ${j.title || NM}
+Total Experience: ${c.totalYears != null ? c.totalYears + " years" : NM}
+Relevant Experience: ${c.relevantYears != null ? c.relevantYears + " years" : NM}
+Technical Skills: ${arr(c.skills).join(", ") || NM}
+JD Match Score: ${fmt(s.total)} / 100 (${s.band[1]}; preliminary JD alignment, not a hiring decision)
+${s.parts.map(p => `  - ${p.label}: ${fmt(p.pts)} / ${p.w}`).join("\n")}
+Strong Matching Areas: ${s.man.filter(x => x.level === "hands-on").map(x => x.skill).join(", ") || "None evidenced"}
+Missing Skills: ${s.missing.join(", ") || "None"}${s.weak.length ? "\nNeeds verification: " + s.weak.join(", ") : ""}
+Technical Concerns: ${arr(c.concerns).join("; ") || "None noted"}
+Verify: ${arr(c.verify).join("; ") || "None noted"}
+Recruiter Screening Notes: ${c.notes || NM}
+Notice Period: ${c.noticeDays != null ? c.noticeDays + " days" : NM}
+Compensation Details: Current ${nm(c.currentCtc)}; Expected ${nm(c.expectedCtc)}
+Location: ${nm(c.location)}
+Recommended Next Step: ${c.decision || s.next + " (suggested)"}
+Reason: ${s.why}`;
+}
+
+/* ---------- render ---------- */
+const VIEWS = ["dashboard","jobs","candidates","sourcing","questions","edit","screen","messages","help"];
+function renderTop() {
+  const j = activeJob(); const nC = j ? candsFor(j.id).length : 0;
+  const cur = v => S.view === v || (v === "jobs" && (S.view === "sourcing" || S.view === "edit")) ? 'aria-current="page"' : "";
+  $("#side").innerHTML = `
+    <div class="logo"><span class="mk">IT</span><div><b>IT Recruitment Assistant</b><small>[Organization name]</small></div></div>
+    <span class="grp">Overview</span>
+    <a class="nv" href="#dashboard" ${cur("dashboard")}>${ic("grid")}Dashboard</a>
+    <span class="grp">Recruitment</span>
+    <a class="nv" href="#jobs" ${cur("jobs")}>${ic("brief")}Jobs<span class="ct">${S.jobs.length || ""}</span></a>
+    <a class="nv" href="#candidates" ${cur("candidates")}>${ic("users")}Candidates<span class="ct">${nC || ""}</span></a>
+    <a class="nv" href="#questions" ${cur("questions")}>${ic("list")}Screening questions</a>
+    <span class="grp">Process</span>
+    <a class="nv" href="#screen" ${cur("screen")}>${ic("scan")}Screen resume</a>
+    <a class="nv" href="#messages" ${cur("messages")}>${ic("mail")}Messages</a>
+    <span class="grp">Others</span>
+    <a class="nv" href="#help" ${cur("help")}>${ic("help")}Help</a>
+    <div class="who">${av(S.recruiter || "Recruiter")}<div><b>${esc(S.recruiter || "Add your name")}</b><small>Recruiter · <a href="#help" style="color:inherit">edit</a></small></div></div>`;
+  const p = $("#jobPick");
+  p.innerHTML = S.jobs.length ? S.jobs.map(x => `<option value="${x.id}" ${j && j.id === x.id ? "selected" : ""}>${esc((x.code ? x.code + " · " : "") + (x.title || "Untitled"))}${x.fictional ? " (fictional)" : ""}</option>`).join("") : `<option>No jobs yet</option>`;
+  p.disabled = !S.jobs.length;
+  const st = $("#status");
+  st.className = "pill " + (S.mode === "shared" ? "ok" : S.mode === "local" ? "" : "wait");
+  st.innerHTML = `<i></i>${S.mode === "shared" ? "Saved" : S.mode === "local" ? "Local only: not saved" : "Connecting"}`;
+  const jobView = ["jobs","candidates","sourcing","questions","edit"].includes(S.view);
+  const names = {dashboard: ["Overview", "Dashboard"], screen: ["Process", "Screen resume"], messages: ["Process", "Messages"], help: ["Others", "Help"]};
+  let crumb;
+  if (jobView) {
+    const tab = {jobs: "Details", candidates: "Candidates", sourcing: "Sourcing", questions: "Screening questions", edit: "Edit"}[S.view];
+    crumb = `<a href="#jobs">Jobs</a><span>/</span><b>${esc(S.newJob ? "New job" : j ? j.title : "No jobs yet")}</b>${!S.newJob && j && S.view !== "jobs" ? `<span>/</span><span>${tab}</span>` : ""}`;
+  } else { const n = names[S.view] || names.dashboard; crumb = `<span>${n[0]}</span><span>/</span><b>${n[1]}</b>`; }
+  $("#crumb").innerHTML = crumb;
+}
+function render() {
+  const ae = document.activeElement, fid = ae && ae.id, sel = fid && "selectionStart" in ae ? (() => { try { return [ae.selectionStart, ae.selectionEnd]; } catch { return null; } })() : null;
+  const dScroll = $(".drawer") ? $(".drawer").scrollTop : 0;
+  renderTop();
+  const jobView = ["jobs","candidates","sourcing","questions","edit"].includes(S.view);
+  let html = jobView ? vJob() : ({dashboard: vDashboard, screen: vScreen, messages: vMessages, help: vHelp}[S.view] || vDashboard)();
+  if (S.mode === "local" && !["messages","help"].includes(S.view)) html = `<div class="callout info">This view can't reach the saved workspace, so changes stay in this tab only. Open the page in Claude while signed in to save jobs and candidates.</div>` + html;
+  $("#view").innerHTML = html;
+  $("#drawerRoot").innerHTML = drawer();
+  if ($(".drawer")) $(".drawer").scrollTop = dScroll;
+  if (fid) { const el = document.getElementById(fid); if (el && el !== document.activeElement) { el.focus({preventScroll: true}); if (sel && "setSelectionRange" in el) try { el.setSelectionRange(sel[0], sel[1]); } catch {} } }
+}
+function route() {
+  const h = location.hash.replace("#", "");
+  const map = {requisitions: "jobs", shortlist: "candidates"};
+  S.view = VIEWS.includes(h) ? h : (map[h] || "dashboard");
+  S.err = null;
+}
+
+/* ---------- actions ---------- */
+function readEvidence(list, jobSkills) {
+  return arr(jobSkills).map(sk => {
+    const f = (Array.isArray(list) ? list : []).find(x => String(x.skill || "").toLowerCase() === String(sk).toLowerCase());
+    const level = f && LV[f.level] !== undefined ? f.level : "none";
+    return {skill: sk, level, evidence: f ? (f.evidence || NM) : NM};
+  });
+}
+const numOrNull = v => v === "" || v === null || v === undefined || isNaN(Number(v)) ? null : Number(v);
+const sOrNM = v => (typeof v === "string" && v.trim()) ? v.trim() : NM;
+
+const go = h => { if (location.hash === h) { route(); render(); } else location.hash = h; };
+const A = {
+  async analyseJD() {
+    const text = (d("nj_jd") || "").trim();
+    if (text.length < 80) { S.err = {kind: "jd", text: "Paste the full job description first (at least a few lines)."}; return render(); }
+    S.err = null;
+    try {
+      const r = await ai("jd", "Analysing the JD: extracting requirements, Boolean strings and screening questions…", jdPrompt(text.slice(0, 40000)));
+      if (!r || typeof r !== "object") throw {code: "invalid_json"};
+      const j = {
+        id: uid("j"), code: d("nj_code").trim() || "", title: sOrNM(r.title), seniority: sOrNM(r.seniority),
+        minYears: numOrNull(r.minYears), maxYears: numOrNull(r.maxYears), mandatory: arr(r.mandatory), preferred: arr(r.preferred),
+        education: sOrNM(r.education), domain: sOrNM(r.domain), domainRequired: ["mandatory","preferred","none"].includes(r.domainRequired) ? r.domainRequired : "none",
+        location: sOrNM(r.location), workMode: sOrNM(r.workMode), budget: sOrNM(r.budget),
+        noticePreferredDays: numOrNull(r.noticePreferredDays), noticeMaxDays: numOrNull(r.noticeMaxDays),
+        keywords: arr(r.keywords), titles: arr(r.titles), altTitles: arr(r.altTitles), combos: arr(r.combos),
+        booleans: (Array.isArray(r.booleans) ? r.booleans : []).filter(b => b && b.query).map(b => ({label: String(b.label || "Search string"), query: String(b.query), why: String(b.why || "")})),
+        strategy: arr(r.strategy), questions: (Array.isArray(r.questions) ? r.questions : []).filter(q => q && q.q).map(q => ({q: String(q.q), indicator: String(q.indicator || ""), followUp: String(q.followUp || "")})),
+        assumptions: arr(r.assumptions), clarifications: arr(r.clarifications),
+        jdText: text.slice(0, 20000), status: "open", sourcedCount: Number(d("nj_sourced")) || 0, createdAt: Date.now()
+      };
+      await saveJob(j);
+      S.jobId = j.id; lsSet("jobId", j.id); S.newJob = false; S.draft.nj_jd = ""; S.draft.nj_code = ""; S.draft.nj_sourced = "";
+      toast("Requisition created"); render();
+    } catch (e) { S.err = {kind: "jd", text: errText(e)}; render(); }
+  },
+  async manualJob() {
+    const j = {id: uid("j"), code: d("nj_code").trim(), title: "New requisition", mandatory: [], preferred: [], domainRequired: "none", status: "open", sourcedCount: Number(d("nj_sourced")) || 0, jdText: (d("nj_jd") || "").slice(0, 20000), createdAt: Date.now(), questions: [], booleans: []};
+    await saveJob(j); S.jobId = j.id; lsSet("jobId", j.id); S.newJob = false; S.ed = null; go("#edit");
+  },
+  async saveEdit() {
+    const j = activeJob(), e = S.ed; if (!j || !e || e.id !== j.id) return;
+    const out = clone(j), t = v => String(v ?? "").trim();
+    Object.assign(out, {title: t(e.title) || "Untitled", code: t(e.code), seniority: t(e.seniority) || NM, minYears: numOrNull(e.minYears), maxYears: numOrNull(e.maxYears),
+      location: t(e.location) || NM, workMode: t(e.workMode) || NM, budget: t(e.budget) || NM, education: t(e.education) || NM, domain: t(e.domain) || NM,
+      domainRequired: e.domainRequired || "none", noticePreferredDays: numOrNull(e.noticePreferredDays), noticeMaxDays: numOrNull(e.noticeMaxDays),
+      sourcedCount: Number(e.sourcedCount) || 0, status: e.status || "open"});
+    LISTF.forEach(k => out[k] = arr(e[k]));
+    LINEF.forEach(k => out[k] = String(e[k] || "").split("\n").map(x => x.trim()).filter(Boolean));
+    out.booleans = e.booleans.filter(b => t(b.query)).map(b => ({label: t(b.label) || "Search string", query: t(b.query), why: t(b.why)}));
+    out.questions = e.questions.filter(q => t(q.q)).map(q => ({q: t(q.q), indicator: t(q.indicator), followUp: t(q.followUp)}));
+    try { await saveJob(out); S.ed = null; toast("Changes saved"); render(); } catch (err) { toast("Couldn't save. You may have view-only access."); }
+  },
+  addBool() { S.ed.booleans.push({label: "", query: "", why: ""}); render(); },
+  addQ() { S.ed.questions.push({q: "", indicator: "", followUp: ""}); render(); },
+  delRow(el) { S.ed[el.dataset.l].splice(Number(el.dataset.i), 1); render(); },
+  moveQ(el) { const i = Number(el.dataset.i), k = i + Number(el.dataset.d), q = S.ed.questions; if (k < 0 || k >= q.length) return; [q[i], q[k]] = [q[k], q[i]]; render(); },
+  async delJob() {
+    const j = activeJob(); if (S.confirm !== "job" + j.id) { S.confirm = "job" + j.id; return render(); }
+    S.confirm = null; for (const c of candsFor(j.id)) await delDoc("candidates", c.id);
+    await delDoc("jobs", j.id); S.ed = null; S.jobId = ""; toast("Job deleted"); go("#jobs");
+  },
+  async screen() {
+    const j = activeJob(); const text = (d("resText") || "").trim();
+    if (text.length < 80) { S.err = {kind: "resume", text: "Paste the resume text or upload a file first."}; return render(); }
+    if (!arr(j.mandatory).length) { S.err = {kind: "resume", text: "This requisition has no mandatory skills yet. Add them under Requisitions → Edit requirements."}; return render(); }
+    S.err = null;
+    try {
+      const r = await ai("resume", "Screening the resume against the requisition…", resumePrompt(j, text.slice(0, 40000)));
+      if (!r || typeof r !== "object") throw {code: "invalid_json"};
+      const cleanQ = (Array.isArray(r.questions) ? r.questions : []).filter(q => q && q.q).map(q => ({q: String(q.q), indicator: String(q.indicator || ""), followUp: String(q.followUp || "")}));
+      const c = {id: uid("c"), jobId: j.id, name: sOrNM(r.name), designation: sOrNM(r.designation), totalYears: numOrNull(r.totalYears), relevantYears: numOrNull(r.relevantYears), relevantBasis: String(r.relevantBasis || ""),
+        skills: arr(r.skills), projects: arr(r.projects), domainExperience: sOrNM(r.domainExperience), education: sOrNM(r.education), certifications: arr(r.certifications),
+        location: sOrNM(r.location), noticeDays: numOrNull(r.noticeDays), noticeText: sOrNM(r.noticeText), currentCtc: sOrNM(r.currentCtc), expectedCtc: sOrNM(r.expectedCtc), achievements: arr(r.achievements),
+        mandatory: readEvidence(r.mandatory, j.mandatory), preferred: readEvidence(r.preferred, j.preferred),
+        projectRelevance: clamp(Math.round(Number(r.projectRelevance) || 0), 0, 10), projectReason: String(r.projectReason || ""),
+        domainMatch: ["yes","no","unknown"].includes(r.domainMatch) ? r.domainMatch : "unknown",
+        educationMatch: ["meets","partial","does-not-meet","unknown"].includes(r.educationMatch) ? r.educationMatch : "unknown",
+        locationFit: ["fits","relocation","mismatch","unknown"].includes(r.locationFit) ? r.locationFit : "unknown",
+        concerns: arr(r.concerns), verify: arr(r.verify), questions: cleanQ, source: S.draft.resSource || "linkedin", stage: "screened", furthest: 1, decision: "", notes: "", createdAt: Date.now()};
+      if (c.name === NM) c.name = "Unnamed candidate";
+      await saveCand(c); S.draft.resText = ""; S.lastScreen = c.id; S.open = c.id; toast("Screened and added to the shortlist"); render();
+    } catch (e) { S.err = {kind: "resume", text: errText(e)}; render(); }
+  },
+  async manualCand() {
+    const j = activeJob();
+    const c = {id: uid("c"), jobId: j.id, name: "New candidate", designation: NM, totalYears: null, relevantYears: null, skills: [], projects: [], mandatory: readEvidence([], j.mandatory), preferred: readEvidence([], j.preferred),
+      projectRelevance: 0, domainMatch: "unknown", educationMatch: "unknown", locationFit: "unknown", noticeDays: null, concerns: [], verify: ["Profile entered manually: confirm all details"], questions: [], source: S.draft.resSource || "linkedin", stage: "screened", furthest: 1, decision: "", notes: "", createdAt: Date.now()};
+    await saveCand(c); S.open = c.id; render();
+  },
+  stop() { S.ctl && S.ctl.abort(); },
+  layout(el) { S.layout = el.dataset.v; render(); },
+  stageTab(el) { S.stageTab = el.dataset.v; S.page = 1; render(); },
+  page(el) { S.page = Number(el.dataset.v) || 1; render(); },
+  newJob() { S.newJob = true; S.editJob = false; S.err = null; render(); },
+  goNewJob() { S.newJob = true; S.editJob = false; go("#jobs"); },
+  cancelNew() { S.newJob = false; render(); },
+  pickJob(el) { S.jobId = el.dataset.id; lsSet("jobId", S.jobId); S.newJob = false; S.editJob = false; S.confirm = null; render(); },
+  openJob(el) { S.jobId = el.dataset.id; lsSet("jobId", S.jobId); S.newJob = false; S.editJob = false; S.stageTab = "all"; S.page = 1; go("#jobs"); },
+  editJob() { go("#edit"); },
+  cancelEdit() { S.ed = null; S.confirm = null; render(); toast("Changes discarded"); },
+  copyBool(el) { const b = activeJob().booleans[Number(el.dataset.i)]; copy(b.query); },
+  copyQs() { copy(activeJob().questions.map((q, i) => `${i + 1}. ${q.q}\n   Good answer: ${q.indicator}\n   Follow-up: ${q.followUp}`).join("\n\n")); },
+  copyReport() { const jobs = S.dashAll ? S.jobs : [activeJob()].filter(Boolean); copy(reportText(jobs, metrics(jobs))); },
+  openCand(el) { S.open = el.dataset.id; S.confirm = null; render(); },
+  closeCand() { S.open = null; S.confirm = null; render(); },
+  copyEval() { copy(evalText(S.cands.find(x => x.id === S.open))); },
+  copyCandQs() { const c = S.cands.find(x => x.id === S.open); copy(c.questions.map((q, i) => `${i + 1}. ${q.q}\n   Good answer: ${q.indicator}\n   Follow-up: ${q.followUp}`).join("\n\n")); },
+  async saveNotes() { const c = clone(S.cands.find(x => x.id === S.open)); c.notes = $("#c_notes").value; delete S.draft["c_notes_" + c.id]; await saveCand(c); toast("Notes saved"); },
+  msgCand() { const c = S.cands.find(x => x.id === S.open); S.msgCand = c.id; S.jobId = c.jobId; lsSet("jobId", c.jobId); S.msgText = null; S.open = null; go("#messages"); },
+  async delCand() {
+    const c = S.cands.find(x => x.id === S.open); if (S.confirm !== "cand" + c.id) { S.confirm = "cand" + c.id; return render(); }
+    S.confirm = null; S.open = null; await delDoc("candidates", c.id); toast("Candidate deleted");
+  },
+  resetMsg() { S.msgText = null; render(); },
+  copyMsg() { copy($("#msgBody").value); },
+  async polish() {
+    const body = $("#msgBody").value; S.err = null;
+    const sample = S.sample || (S.samplePromise ? await S.samplePromise : null);
+    if (!sample) { S.err = {kind: "polish", text: "Claude isn't available in this view."}; return render(); }
+    S.ctl = new AbortController(); S.busy = {kind: "polish", msg: "Tightening the draft…"}; render();
+    try {
+      const {text} = await sample(`Tighten this recruiter message so it is professional, respectful and concise. Keep the first line "Subject: ..." and keep every [bracketed placeholder] exactly. Do not add promises about salary, selection or employment terms. Reply with only the revised message.\n\n${body}`, {signal: S.ctl.signal, modelTier: "quick"});
+      S.msgText = text.trim();
+    } catch (e) { S.err = {kind: "polish", text: errText(e)}; }
+    finally { S.busy = null; S.ctl = null; render(); }
+  },
+};
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  const fn = A[el.dataset.a]; if (!fn) return;
+  e.preventDefault(); if (el.dataset.a !== "delJob" && el.dataset.a !== "delCand") S.confirm = null;
+  fn(el);
+});
+document.addEventListener("input", e => {
+  const t = e.target; if (!t.id) return;
+  if (["nj_jd","nj_code","nj_sourced","resText"].includes(t.id)) S.draft[t.id] = t.value;
+  if (t.id === "c_notes") S.draft["c_notes_" + S.open] = t.value;
+  if (t.id === "msgBody") S.msgText = t.value;
+  if (t.id === "recName") { S.recruiter = t.value; lsSet("recruiter", t.value); }
+  if (t.dataset.ed && S.ed) { S.ed[t.dataset.ed] = t.value; updateSavebar(); }
+  if (t.dataset.edl && S.ed) { const row = S.ed[t.dataset.edl][Number(t.dataset.i)]; if (row) row[t.dataset.k] = t.value; updateSavebar(); }
+  if (t.id === "candSearch") { S.q = t.value; S.page = 1; render(); }
+});
+document.addEventListener("change", async e => {
+  const t = e.target;
+  if (t.id === "jobPick") { S.jobId = t.value; lsSet("jobId", t.value); S.newJob = false; S.editJob = false; S.msgCand = ""; S.msgText = null; S.err = null; S.page = 1; S.stageTab = "all"; return render(); }
+  if (t.id === "srcFilter") { S.srcFilter = t.value; S.page = 1; return render(); }
+  if (t.id === "sortBy") { S.sort = t.value; return render(); }
+  if (t.id === "resSource") { S.draft.resSource = t.value; return; }
+  if (t.id === "dashScope") { S.dashAll = t.value === "all"; return render(); }
+  if (t.id === "msgType") { S.msgType = t.value; S.msgText = null; return render(); }
+  if (t.id === "msgCand") { S.msgCand = t.value; S.msgText = null; return render(); }
+  if (t.id === "recName") { S.msgText = null; return render(); }
+  if (t.id === "resFile" && t.files && t.files[0]) {
+    const f = t.files[0]; S.err = null;
+    try { S.busy = {kind: "resume", msg: `Reading ${f.name}…`}; render(); const txt = await readFile(f); S.draft.resText = (txt || "").trim(); if (!S.draft.resText) throw new Error("No text found. Scanned PDFs need the text pasted in."); }
+    catch (err) { S.err = {kind: "resume", text: err.message === "load" ? "The file reader couldn't load. Paste the resume text instead." : err.message}; }
+    finally { S.busy = null; render(); }
+    return;
+  }
+  const c0 = S.cands.find(x => x.id === S.open);
+  if (c0 && t.closest(".drawer")) {
+    const c = clone(c0);
+    if (t.dataset.lv) {
+      const j = job(c.jobId) || {}; const grp = t.dataset.lv;
+      c[grp] = align(c[grp], arr(j[grp]));
+      const s = c[grp].find(x => x.skill === t.dataset.skill); if (s) { s.level = t.value; if (!s.evidence || s.evidence === "Not assessed") s.evidence = "Set by recruiter"; }
+    } else if (t.id === "c_stage") { c.stage = t.value; const i = stageIdx(t.value); if (i > (c.furthest ?? 1)) c.furthest = i; }
+    else if (t.id === "c_dec") c.decision = t.value;
+    else if (t.id === "c_source") c.source = t.value;
+    else if (t.id === "c_name") c.name = t.value.trim() || "Unnamed candidate";
+    else if (t.id === "c_desig") c.designation = t.value.trim() || NM;
+    else if (t.id === "c_locText") c.location = t.value.trim() || NM;
+    else if (t.id === "c_ectc") c.expectedCtc = t.value.trim() || NM;
+    else if (t.id === "c_rel") c.relevantYears = numOrNull(t.value);
+    else if (t.id === "c_proj") c.projectRelevance = clamp(Math.round(Number(t.value) || 0), 0, 10);
+    else if (t.id === "c_notice") c.noticeDays = numOrNull(t.value);
+    else if (t.id === "c_dom") c.domainMatch = t.value;
+    else if (t.id === "c_edu") c.educationMatch = t.value;
+    else if (t.id === "c_loc") c.locationFit = t.value;
+    else return;
+    try { await saveCand(c); } catch (err) { toast("Couldn't save. You may have view-only access."); }
+  }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape" && S.open) { S.open = null; render(); } });
+window.addEventListener("hashchange", () => { route(); render(); window.scrollTo(0, 0); });
+
+/* ---------- boot ---------- */
+async function boot() {
+  route(); render();
+  S.samplePromise = use("sample").then(s => (S.sample = s));
+  const db = await use("db");
+  if (!db) { S.mode = "local"; return render(); }
+  S.db = db; S.mode = "shared";
+  const sortNew = a => a.sort((x, y) => (y.createdAt || 0) - (x.createdAt || 0));
+  db.collection("jobs").onSnapshot(snap => { S.jobs = sortNew(snap.docs.map(x => ({...x.data(), id: x.id}))); render(); },
+    () => { S.mode = "local"; S.db = null; render(); });
+  db.collection("candidates").onSnapshot(snap => { S.cands = sortNew(snap.docs.map(x => ({...x.data(), id: x.id}))); render(); }, () => {});
+  render();
+}
+boot();
+})();
+</script>
+
+</body>
+</html>

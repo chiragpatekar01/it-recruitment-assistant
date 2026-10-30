@@ -1,0 +1,32 @@
+*** FICTIONAL TEST RESUME – not a real person ***
+
+TEST CANDIDATE Z
+Full Stack Engineer | Hyderabad (willing to relocate to Mumbai)
+Notice period: Serving notice, last working day in 15 days
+Expected CTC: ₹14 LPA
+
+ABOUT
+Full stack engineer with 3.5 years of experience across Node.js and Java. Comfortable with cloud-native development, containers and event-driven systems.
+
+SKILLS
+JavaScript, TypeScript, Node.js, Express, React, Java 17, Spring Boot, REST APIs, Microservices, MongoDB, PostgreSQL, Kafka, Docker, Kubernetes, AWS (Lambda, EKS, S3), GitHub Actions, Git, Jest
+
+EXPERIENCE
+Software Engineer II – Shopnest (fictional e-commerce), Hyderabad | Jan 2024 – Present
+- Built order and inventory services in Spring Boot (Java 17) on Kubernetes (EKS)
+- Event-driven inventory sync using Kafka
+- PostgreSQL for orders, MongoDB for product catalogue
+- CI/CD with GitHub Actions
+
+Software Engineer – Shopnest (fictional e-commerce), Hyderabad | Jun 2022 – Dec 2023
+- Built Node.js/Express APIs and React admin dashboards
+- Wrote unit tests with Jest
+
+Software Engineer Intern – Appforge (fictional), Hyderabad | Jan 2022 – Jun 2023
+- Worked on React front-end features
+
+EDUCATION
+B.Tech, Information Technology – 2022
+
+CERTIFICATIONS
+AWS Certified Developer – Associate
